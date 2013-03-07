@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1 #{username}'s Account
+  p Welcome #{username}
+  p 
+    |
+    |Users: #{users}
+    |
+  form(action="/logout", method="post")
+        button(type="submit") Logout
+  form(action="/game", method="post")
+        button(type="submit") Start Game
