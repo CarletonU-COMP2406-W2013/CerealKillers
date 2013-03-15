@@ -45,9 +45,9 @@ Database.prototype.createGame = function(user1, user2, type, callback){
                     b2[i][j] = true;
                 }
             }
+            currId++;
             game_collection.save({ gameID: currId, gameType: type, player1: user1, player2: user2,
                     board1: b1, board2: b2, guesses: [], chat: [], turn: user1 });
-            currId++;
             callback(currId);
         }
     });
@@ -136,7 +136,7 @@ Database.prototype.findGameById = function(id, callback){
           else callback(null, result);
         });
       }
-    });g
+    });
 };
 
 /* end a game */
@@ -239,7 +239,7 @@ Database.prototype.loginByName = function(name, callback){
     });
 };
 
-Database.prototype.loginByNameAndPassword = function(name, callback){
+Database.prototype.loginByNameAndPassword = function(name, pass, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
