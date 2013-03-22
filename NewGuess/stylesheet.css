@@ -3,6 +3,7 @@ h1{
 	text-align: center;
 }
 body{
+	font-family: Verdana;
 	background-color: #66CCFF;
 }
 #head{
@@ -48,7 +49,7 @@ form{
 }
 
 .list{
-	font-family:garamond;
+	font-family:verdana;
 	color:#black;
 	background-color:white;
 	height: 400px;
@@ -70,4 +71,27 @@ form{
 }
 #chatInput{
 	float:right;
+}
+#id{
+	background-color: white;
+	font-size: 12px;
+}
+#description{
+	width:50em;
+	font-family:Verdana;
+	color:#black;
+	margin-left: auto;
+	margin-right: auto;
+}
+#LogInput{
+	float:right;
+}
+#homePic{
+	height:30em;
+	width: 30em;
+	margin-left: auto;
+	margin-right: auto;
+}
+#MoveLeft{
+	margin-right: 500px;
 }
