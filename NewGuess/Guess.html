@@ -8,14 +8,16 @@
 		<script type="text/javascript" src = "GuessQuery.js"></script>
 	</head>
 	<body>
+		<div id = "wrapper">
 		<div id = "head">
 			<h1>Welcome to Guess Who?!?</h1>
 		</div>
 		</br>
 		<div class = "list" id = "guessWindow"></div>
 		<div class = "list" id = "chatWindow"></div>
-		<table>
-			<tr>
+		<center>
+		<table id = "board">
+		<!--	<tr>
 				<td><img src= "http://images2.fanpop.com/image/photos/9000000/Joker-the-joker-9028188-1024-768.jpg"></td>
 				<td><img src= "http://www.montrealfilmjournal.com/img/pics/R0000159.jpg"></td>	
 				<td><img src= "http://starconnectmedia.files.wordpress.com/2013/01/james-bond.jpg"></td>
@@ -46,18 +48,23 @@
 				<td><img src= "http://www.thecultden.com/uploads/8/1/8/7/8187836/2317288_orig.jpg?0"></td>
 				<td><img src= "http://ic.pics.livejournal.com/womprat99/26059351/7391/7391_original.jpg"></td>
 				<td><img src= "http://25.media.tumblr.com/tumblr_ly6fgpJ9dn1r5ltrko1_400.jpg"></td>
-			</tr>
+			</tr>-->
 		</table>
+	</center>
+		<div id = "test">
 		<form name="guessForm">
 			<input id="guessInput" type="text" name="guessItem"/>
+			<div id = "guessButton">Guess!</div>
 		</form>
+		
+	
 		<form name="chatForm">
 			<input id= "chatInput" type="text" name="chatItem"/>
 		</form>
-		<div id = "guessButton">Guess!</div>
 		<div id = "chatButton">Send!</div>
-		<div id = "picCount"></div>
-
+		</div>
+		<!--<div id = "picCount"></div>-->
+	</div>
 	</body>
 
 </html>

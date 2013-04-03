@@ -6,6 +6,9 @@ body{
 	font-family: Verdana;
 	background-color: #66CCFF;
 }
+td{
+	text-align: center;
+}
 #head{
 	border: 4px solid;
 	border-radius: 25px;
@@ -14,31 +17,28 @@ body{
 	margin-left: auto;
 	margin-right: auto;
 }
-table{
+#board{
 	border: 4px solid;
 	margin-left:auto;
 	margin-right:auto;
 	background-color: white;
 }
 img{
-	width:90px;
-	height:100px;
-}
-form{
-	margin-left: auto;
-	margin-right: auto;
+	width:6em;
+	height:6em;
 }
 #guessButton{
-	height: 20px;
+	height: 18px;
 	width: 70px;
 	background-color: yellow;
 	font-family: Verdana;
 	font-weight:bold;
 	border-radius:5px;
 	text-align:center;
+	float:left;
 }
 #chatButton{
-	height: 20px;
+	height: 18px;
 	width: 70px;
 	background-color: yellow;
 	font-family: Verdana;
@@ -50,10 +50,10 @@ form{
 
 .list{
 	font-family:verdana;
-	color:#black;
+	color:black;
 	background-color:white;
-	height: 400px;
-	width: 300px;
+	height: 30em;
+	width: 19em;
 	border-radius:10px;
 	border: 2px solid;
 }
@@ -71,10 +71,6 @@ form{
 }
 #chatInput{
 	float:right;
-}
-#id{
-	background-color: white;
-	font-size: 12px;
 }
 #description{
 	width:50em;
@@ -94,4 +90,12 @@ form{
 }
 #MoveLeft{
 	margin-right: 500px;
+}
+#wrapper{
+	margin-left:auto;
+    margin-right:auto;
+    width:83em;
+}
+#test{
+	//background-color: black;
 }
