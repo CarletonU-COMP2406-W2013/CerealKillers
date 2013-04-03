@@ -1,8 +1,7 @@
-/*
- * Game page
+/**
+ * GET Game page
  */
 
-exports.game = function(req, res){
-    res.render("game.jade",{title:"Game"});
-};
-
+exports.index = function(req, res){
+    res.render('game', { title: 'GuessMe!', error: req.query.error });
+}

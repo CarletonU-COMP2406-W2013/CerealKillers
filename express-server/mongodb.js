@@ -7,7 +7,7 @@ var ObjectID = require('mongodb').ObjectID;
 /* keep track of active games */
 var currId = 0;
 
-/*
+/**
  * Database object
  */
 Database = function(host, port){
@@ -16,7 +16,7 @@ Database = function(host, port){
 };
 
 
-/*
+/**
  * Game functions
  */
 Database.prototype.getGames = function(callback){
@@ -32,12 +32,12 @@ Database.prototype.createGame = function(user1, user2, type, callback){
         if( error ) callback(error);
         else {
             /* create two game boards as 2D arrays */
-            var b1 = new Array(10);
-            var b2 = new Array(10);
+            var b1 = new Array(6);
+            var b2 = new Array(6);
 
             for( var i=0; i<10; i++ ){
-                b1[i] = new Array(6);
-                b2[i] = new Array(6);
+                b1[i] = new Array(4);
+                b2[i] = new Array(4);
 
                 /* all positions are true; all characters are shown */
                 for( var j=0; j<6; j++ ){
@@ -156,7 +156,7 @@ Database.prototype.endGameById = function(id, callback){
 };
 
 
-/*
+/**
  * User functions
  */
 Database.prototype.getUsers = function(callback){
@@ -171,7 +171,7 @@ Database.prototype.saveSimpleUser = function(user, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
-            user_collection.save({ userName: user.name, online: true, currGameID: -1 });
+            user_collection.save({ userName: user.name, online: 'yes', currGameID: -1 });
         }
     });
 };
@@ -268,7 +268,7 @@ Database.prototype.getUsersCurrGameByName = function(name, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
-        user_collection.find({ userName: name,  online: 'yes' }, function(error, results, callback){
+        user_collection.find({ userName: name,  online: 'yes' }, { currGameID: true }, function(error, results, callback){
             if( error ) callback(error);
             else callback(results);
         });

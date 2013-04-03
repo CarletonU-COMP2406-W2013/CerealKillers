@@ -3,15 +3,16 @@
  * Module dependencies.
  */
 
-var Database = require('./mongodb').Database;
+var db = require('./mongodb').Database;
 
 var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
   , game = require('./routes/game')
+  , index = require('./routes/index')
+  , description = require('./routes/description')
   , http = require('http')
-  , path = require('path')
-  , db = require("./totallyLegitDB");
+  , path = require('path');
 
 var app = express();
 
@@ -34,80 +35,50 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-var database = new Database('localhost', 27017);
-
-
-
-/**************************/
-
-/* database testing... */
-var user1 = {
-    name: 'aabbcc123'
-};
-database.saveSimpleUser(user1);
-
-var user2 = {
-    name: 'yomanwhatsup'
-};
-database.saveSimpleUser(user2);
-
-database.logoutByName(user2.name, function(){ });
-database.loginByName(user1.name, function(){ });
-
-/* still need to get this function (and others like this) working ... */
-database.userListing(function(error, result){
-    console.log(result);
-});
-
-var id1;
-var id2;
-database.createGame(user1, user2, 'video game characters', function(result){
-    id1 = result;
-    console.log('current game id: ' + id1);
-});
-database.createGame(user1, user2, 'hockey players', function(result){
-    id2 = result;
-    console.log('current game id: ' +id2);
-});
-database.endGameById(id1, function(){ });
-
-
-/***********************/
+var db = new Database('localhost', 27017);
 
 
 
 app.get('/', function(req, res, next){
-    if(req.session.username){
-        res.redirect("/users");
-    }else{
-        routes.index(req, res, next);
-    }
+    // if logged in, account, else /index
+    res.redirect("/index");
 });
-app.get('/users', db.isAuthenticated, user.list);
+
 app.post("/login", function(req,res){
-    db.login(req, req.body.username);
-    res.redirect("/users");
+    // db.login(req.username);
+    //res.redirect("/account");
 });
 
 app.post("/logout", function(req,res){
-    db.logout(req);
+    // logout database
     res.redirect("/");
 });
 
-app.get('/game', function (req, res){
-    res.render('game',
-    { title: 'New Game' }
-    )
+app.get('/index', function(req, res){
+    res.render('index', { 
+        title: 'Welcome to GuessMe!' 
+    })
 });
 
-app.post("/game", function(req, res){
-    res.render('game',
-    { title: 'New Game' }
-    )
+app.get('/game', function(req, res){
+    res.render('game', { 
+        title: 'New Game' 
+    })
+});
+app.post('/move', function(req, res){
+     // Save game state to db!
+ });
+ app.get('/state', function(req, res){
+     // Pull current game state!
+     // [ prob called from ajax ]
+});
+
+app.get('/description', function(req, res){
+    res.render('description', {
+        title: 'About GuessMe!'
+    })
 });
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+    console.log("Express server listening on port " + app.get('port'));
 });
-
-
