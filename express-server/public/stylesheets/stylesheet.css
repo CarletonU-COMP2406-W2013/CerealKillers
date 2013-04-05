@@ -1,97 +1,101 @@
 h1{
-	font-family: Verdana;
-	text-align: center;
+    font-family: Verdana;
+    text-align: center;
 }
 body{
-	font-family: Verdana;
-	background-color: #66CCFF;
+    font-family: Verdana;
+    background-color: #66CCFF;
+}
+td{
+    text-align: center;
 }
 #head{
-	border: 4px solid;
-	border-radius: 25px;
-	background-color: yellow;
-	width: 40em;
-	margin-left: auto;
-	margin-right: auto;
+    border: 4px solid;
+    border-radius: 25px;
+    background-color: yellow;
+    width: 40em;
+    margin-left: auto;
+    margin-right: auto;
 }
-table{
-	border: 4px solid;
-	margin-left:auto;
-	margin-right:auto;
-	background-color: white;
+#board{
+    border: 4px solid;
+    margin-left:auto;
+    margin-right:auto;
+    background-color: white;
 }
 img{
-	width:90px;
-	height:100px;
-}
-form{
-	margin-left: auto;
-	margin-right: auto;
+    width:6em;
+    height:6em;
 }
 #guessButton{
-	height: 20px;
-	width: 70px;
-	background-color: yellow;
-	font-family: Verdana;
-	font-weight:bold;
-	border-radius:5px;
-	text-align:center;
+    height: 18px;
+    width: 70px;
+    background-color: yellow;
+    font-family: Verdana;
+    font-weight:bold;
+    border-radius:5px;
+    text-align:center;
+    float:left;
 }
 #chatButton{
-	height: 20px;
-	width: 70px;
-	background-color: yellow;
-	font-family: Verdana;
-	font-weight:bold;
-	border-radius:5px;
-	text-align:center;
-	float: right;
+    height: 18px;
+    width: 70px;
+    background-color: yellow;
+    font-family: Verdana;
+    font-weight:bold;
+    border-radius:5px;
+    text-align:center;
+    float: right;
 }
 
 .list{
-	font-family:verdana;
-	color:#black;
-	background-color:white;
-	height: 400px;
-	width: 300px;
-	border-radius:10px;
-	border: 2px solid;
+    font-family:verdana;
+    color:black;
+    background-color:white;
+    height: 29em;
+    width: 19em;
+    border-radius:10px;
+    border: 2px solid;
 }
 #guessWindow{
-	float: left;
+    float: left;
 }
 #chatWindow{
-	float: right;
+    float: right;
 }
 .item {
-	color: black;
+    color: black;
 }
 #chatForm{
-	float: right;
+    float: right;
 }
 #chatInput{
-	float:right;
-}
-#id{
-	background-color: white;
-	font-size: 12px;
+    float:right;
 }
 #description{
-	width:50em;
-	font-family:Verdana;
-	color:#black;
-	margin-left: auto;
-	margin-right: auto;
+    width:50em;
+    font-family:Verdana;
+    color:#black;
+    margin-left: auto;
+    margin-right: auto;
 }
 #LogInput{
-	float:right;
+    float:right;
 }
 #homePic{
-	height:30em;
-	width: 30em;
-	margin-left: auto;
-	margin-right: auto;
+    height:30em;
+    width: 30em;
+    margin-left: auto;
+    margin-right: auto;
 }
 #MoveLeft{
-	margin-right: 500px;
+    margin-right: 500px;
+}
+#wrapper{
+    margin-left:auto;
+    margin-right:auto;
+    width:83em;
+}
+#test{
+    //background-color: black;
 }

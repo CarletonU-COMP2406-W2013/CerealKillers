@@ -7,7 +7,7 @@ var db = require('./mongodb').Database;
 
 var express = require('express')
   , routes = require('./routes')
-  , user = require('./routes/user')
+  , user = require('./routes/account')
   , game = require('./routes/game')
   , index = require('./routes/index')
   , description = require('./routes/description')
@@ -38,10 +38,19 @@ app.configure('development', function(){
 var db = new Database('localhost', 27017);
 
 
-
 app.get('/', function(req, res, next){
     // if logged in, account, else /index
     res.redirect("/index");
+});
+
+app.get('/account', function(req, res){
+    db.userListing(function (results){
+        res.render("account", {
+            title: 'Your Account',
+            username: 'User',
+            users: JSON.stringify(results)
+        });
+    });
 });
 
 app.post("/login", function(req,res){
@@ -61,16 +70,27 @@ app.get('/index', function(req, res){
 });
 
 app.get('/game', function(req, res){
-    res.render('game', { 
-        title: 'New Game' 
-    })
+    db.createGame("Kurt123", "branS2233", "Super-heroes", function(results, error){
+        if( error ){
+            console.log(error);
+        }else{
+            console.log(results);
+            res.render('game', { 
+                title: 'New Game',
+                gameID: results,
+                user: 'Kurt123',
+                opponent: 'branS2233'
+            });
+        }
+    });
 });
-app.post('/move', function(req, res){
-     // Save game state to db!
- });
- app.get('/state', function(req, res){
-     // Pull current game state!
-     // [ prob called from ajax ]
+app.post('/update-game', function(req, res){
+    console.log("got");
+    res.send("whats up?");
+
+});
+app.get('/game-state', function(req, res){
+    // server state!
 });
 
 app.get('/description', function(req, res){
