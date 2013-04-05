@@ -14,7 +14,7 @@ Description:
 
 The objective is to guess which character the opponent is holding.
 
-A player selects the theme for the game they wish to play. This theme will be a collection of characters in which the players will attempt to guess. Examples may include video game characters, celebrities, historic figures, etcetera. A game is formed via a connection over our web server between two players of the same theme. The players are given a random character from the collection, and the game begins. 
+A player selects the theme for the game they wish to play. This theme will be a collection of characters in which the players will attempt to guess. Examples may include video game characters, celebrities, historic figures, etc. A game is formed via a connection over our web server between two players of the same theme. The players are given a random character from the collection, and the game begins. 
 
 The player who is selected to guess first inputs simple yes or no questions into a text field to be passed to the opponent via the server to help reveal the identity of their opponents chosen character (ie. hair color, faical hair, etc.). When the player receives their opponents response, they are able to cross out any characters on their board which do not fit their new description of who their opponents character might be. For example, a player may ask if their opponents character has starred in an action movie. Finding out that the answer is in fact "No", the player can now cross out any characters on their board who have starred in an action move. 
 The players alternate guessing and answering until one of them figures out their opponents character.
@@ -37,3 +37,10 @@ Our GUI consists of 5 main panels:
 
 5.	Opponenets game board panel (top right corner):
         This panel shows a small representation of the opponent's game board. On this representation you can see how many characters have been crossed out by your         	opponent. However you cannot see which characters they are.
+
+Dependinces:
+-------------
+- mongodb
+- node
+- express
+- jade
