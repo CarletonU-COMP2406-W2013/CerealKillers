@@ -14,24 +14,36 @@
 			<h1>Welcome to Guess Who?!?</h1>
 		</div>
 		</br>
-		<div class = "list" id = "guessWindow"></div>
-		<div class = "list" id = "chatWindow"></div>
+		<div id = "guessWindow"><div class = "list" id="guessToScroll"></div></div>
+		<div id = "chatWindow"><div class = "list" id="chatToScroll"></div></div>
 		<center>
 		<table id = "board">
 		</table>
 	</center>
-		<div>
-		<form name="guessForm">
+	<table id = "formatBottom">
+	<tr>
+		<td>
+			<form name="guessForm">
 			<input id="guessInput" type="text" name="guessItem" onkeypress="return runGuess(event)"/>
+			</form>
 			<div id = "guessButton">Guess!</div>
-		</form>
-		
-	
-		<form name="chatForm">
+		</td>
+		<td id = "centerCell">
+			<b>
+			Your final guess!
+			<form name="finalGuessForm">
+				<input id="finalInput" type="text" name="finalItem" onkeypress="return runFinalGuess(event)"/>
+			</form>
+			Beware if you're wrong you lose!</b>
+		</td>
+		<td>
+			<form name="chatForm">
 			<input id= "chatInput" type="text" name="chatItem" onkeypress="return runChat(event)"/>
-		</form>
-		<div id = "chatButton">Send!</div>
-		</div>
+			</form>
+			<div id = "chatButton">Send!</div>
+		</td>
+	</tr>
+</table>
 	</div>
 	<div id = "yourCard"><center></center></div>
 
