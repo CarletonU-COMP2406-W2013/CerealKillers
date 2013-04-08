@@ -24,8 +24,8 @@ td{
 	background-color: white;
 }
 img{
-	width:6em;
-	height:6em;
+	width:4em;
+	height:4em;
 }
 #guessButton{
 	height: 18px;
@@ -52,7 +52,7 @@ img{
 	font-family:verdana;
 	color:black;
 	background-color:white;
-	height: 30em;
+	height: 22em;
 	width: 19em;
 	border-radius:10px;
 	border: 2px solid;
@@ -97,5 +97,26 @@ img{
     width:83em;
 }
 #test{
-	//background-color: black;
+	background-color: black;
+	width: 15em;
+	float:right;
+}
+#yourCard{
+	width: 6em;
+	background-color: black;
+	color: white;
+	text-align: center;
+}
+#opponent{
+	background-color: black;
+	position: absolute;
+    top: 1em;
+    right: 1em;
+    height: 5em;
+    width:8em;
+}
+#oElement{
+//	background-color: white;
+	width:1em;
+	height: 1em;
 }
