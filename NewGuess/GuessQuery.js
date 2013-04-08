@@ -13,7 +13,7 @@ function runGuess(e) {
     if (e.keyCode == 13) {
     	var toAdd = $('input[name=guessItem]').val();
 		if((yourTurn == true) && (toAdd != "")){
-			$('#guessWindow').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+			$('#guessToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
 			yourTurn = false;
 		}
 		$('input[name=guessItem]').val("");
@@ -27,8 +27,14 @@ function runChat(e){
 	if(e.keyCode == 13){
 		var toAdd = $('input[name=chatItem]').val();
 		if(toAdd != "")
-			$('#chatWindow').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+			$('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
 		$('input[name=chatItem]').val("");
+		return false;
+	}
+}
+function runFinalGuess(e){
+	if(e.keyCode == 13){
+	alert("GOOD GUESS");
 		return false;
 	}
 }
@@ -91,16 +97,16 @@ $(document).ready(function(){
 	$('#guessButton').click(function(){
 		var toAdd = $('input[name=guessItem]').val();
 		if((yourTurn == true) && (toAdd != "")){
-			$('#guessWindow').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+			$('#guessToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
 			yourTurn = false;
 		}
-		$('input[name=guessItem]').val() = "";
+		$('input[name=guessItem]').val("");
 	});
 	//handles the chat div being clicked
 	$('#chatButton').click(function(){
 		var toAdd = $('input[name=chatItem]').val();
 		if(toAdd != "")
-			$('#chatWindow').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+			$('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
 		$('input[name=chatItem]').val("");
 	});
 	//when the user clicks on a picture it will fade out or in and assign the correct value to that position in the array
