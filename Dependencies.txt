@@ -1,7 +1,0 @@
-Dependencies
-=============
-
-mongodb
-node
-express
-jade

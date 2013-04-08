@@ -1,7 +1,0 @@
-Motivation
-==========
-
-As a team, being all 90's kids, we realized that there were a lot of classic games from our childhood being rebooted for todays world. Games that span all different mediums from video games to board games have been getting an upgrade and we wanted to upgrade one of our favorite classic 90's game, Guess Who. Guess Who is a very simple game that uses the powers of process of elimination to find the answer. Our main goals for making a web application of Guess Who was the ability to connect two clients in a game who don't need to be sitting across from each other. Originally Guess Who was a board game that meant having to sit with your opponent in order to play. With our web app version we have the ability to connect players from different places using the knowledge we gathered from class. Another goal was the update it self, the characters of Guess Who seemed a little to out of date and dull and bland; thus we have update the list of characters to a more up to date group from superheroes to video game characters to whatever else.
-
-In conclusion we wanted to create an update version of one of our favorite classic childhood games. We thought the best way to do this would be to have users from anywhere and everywhere connect to play via the interwebs. Along with updating the game to have a more modern feel.
- 
