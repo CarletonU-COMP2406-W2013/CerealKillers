@@ -44,12 +44,18 @@ app.get('/', function(req, res, next){
 });
 
 app.get('/account', function(req, res){
-    db.userListing(function (results){
-        res.render("account", {
-            title: 'Your Account',
-            username: 'User',
-            users: JSON.stringify(results)
-        });
+    db.userListing(function (error, results){
+        if( error ){
+            console.log(error);
+        } else{
+            var json = JSON.stringify(results);
+            var users = JSON.parse(json);
+            res.render("account", {
+                title: 'Your Account',
+                username: 'User',
+                users: JSON.stringify(results)
+            });
+        }
     });
 });
 
@@ -91,6 +97,10 @@ app.post('/update-game', function(req, res){
 });
 app.get('/game-state', function(req, res){
     // server state!
+});
+
+app.get('/game-characters', function(req, res){
+    // Pull 2D array of file paths.
 });
 
 app.get('/description', function(req, res){

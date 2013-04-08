@@ -276,4 +276,38 @@ Database.prototype.getUsersCurrGameByName = function(name, callback){
     });
 };
 
+
+/**
+ * Save game types as 2d arrays
+ * of image paths with 2d arrays of character names.
+ */
+Database.prototype.getCharactersCollection = function(callback){
+  this.db.collection('characters', function(error, characters_collection){
+    if( error ) callback(error);
+    else callback(null, characters_collection);
+  });
+};
+
+Database.prototype.getCharactersByType = function(type, callback){
+    this.getCharactersCollection(function(error, characters_collection){
+        if( error ) callback(error);
+        else{
+            characters_collection.find({ type: type }, function(error, results, callback){
+                if( error ) callback(error);
+                else callback(results);
+            });
+        }
+    });
+};
+
+Database.prototype.saveCharacterSetByType = function(type, arr1, arr2, callback){
+    this.getCharactersCollection(function(error, characters_collection){
+        if( error ) callback(error);
+        else{ 
+            characters_collection.save({ type: type, images: arr1, names: arr2 });
+            callback(null, 'success!');
+        }
+    });
+};
+
 exports.Database = Database;
