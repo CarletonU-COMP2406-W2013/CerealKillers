@@ -144,8 +144,8 @@ img{
 	position: absolute;
     top: 1em;
     right: 3em;
-    height: 4em;
-    width:6em;
+    height: 5em;
+    width:7.5em;
 }
 #oElement{
 	width:1em;
@@ -155,8 +155,8 @@ img{
 	width: 20em;
 }
 #centerCell{
-	padding-left: 15em;
-	padding-right: 15em;
+	padding-left: 22em;
+	padding-right: 22em;
 	padding-top: 0px;
 	padding-bottom: 0px;
 }

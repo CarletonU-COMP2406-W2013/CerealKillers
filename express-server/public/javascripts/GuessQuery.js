@@ -32,6 +32,15 @@ function runChat(e){
 		return false;
 	}
 }
+function runFinalGuess(e){
+    if(e.keyCode == 13){
+        var toAdd = $('input[name=finalItem]').val();
+        if(toAdd != "")
+            alert("Good Guess")
+        $('input[name=finalItem]').val("");
+        return false;
+    }
+}
 //initializes the two dimensional array of boolean values "toSend" all to false
 var startUpSendArray = function(ts){
 	for(var i=0;i<4;i++){
@@ -81,7 +90,7 @@ var updateOpponentArray = function(opp){
 };
     /*****************************************
      * 		       DOC IS READY              *
-     ******************************************/
+     *****************************************/
 $(document).ready(function(){
     //Sets up the card that the user will be answering questions about
     $('#yourCard').append('<img src ='+element+'><br>'+'The Name');
@@ -91,6 +100,9 @@ $(document).ready(function(){
     startOpponentArray(opp);
     updateOpponentArray(opp);
     //Handles the guess div being clicked
+    window.setInterval(function() {
+        $.post('/update-game', function(){});
+    }, 5); //5 seconds
     $('#guessButton').click(function(){
         var toAdd = $('input[name=guessItem]').val();
         if((yourTurn == true) && (toAdd != "")){
