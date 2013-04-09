@@ -7,9 +7,10 @@ var db = require('./mongodb').Database;
 
 var express = require('express')
   , routes = require('./routes')
-  , user = require('./routes/account')
+  , account = require('./routes/account')
   , game = require('./routes/game')
   , index = require('./routes/index')
+  , login = require('./routes/login')
   , description = require('./routes/description')
   , http = require('http')
   , path = require('path');
@@ -22,7 +23,7 @@ app.configure(function(){
   app.set('view engine', 'jade');
   app.use(express.favicon());
   app.use(express.logger('dev'));
-  app.use(express.bodyParser());
+  app.use(require('connect').bodyParser());
   app.use(express.methodOverride());
   app.use(express.cookieParser());
   app.use(express.session({ secret: 'keyboard cat'}));
@@ -39,11 +40,17 @@ var db = new Database('localhost', 27017);
 
 
 app.get('/', function(req, res, next){
-    // if logged in, account, else /index
-    res.redirect("/index");
+    if( req.session.isAuthenticated ){
+        res.redirect('/account');
+    } else{
+        res.redirect('/index');
+    }
 });
 
 app.get('/account', function(req, res){
+    if(! req.session.isAuthenticated ){
+        res.redirect('/login');
+    }
     db.userListing(function (error, results){
         if( error ){
             console.log(error);
@@ -51,35 +58,90 @@ app.get('/account', function(req, res){
             var json = JSON.stringify(results);
             var users = JSON.parse(json);
             res.render("account", {
-                title: 'Your Account',
-                username: 'User',
-                users: JSON.stringify(results)
+                title: 'Account',
+                username: req.session.username,
+                users: results
             });
         }
     });
 });
 
-app.post("/login", function(req,res){
-    // db.login(req.username);
-    //res.redirect("/account");
+app.get('/login', function(req, res){
+    res.render('login', {
+        title: 'Login'
+    });
 });
 
-app.post("/logout", function(req,res){
-    // logout database
-    res.redirect("/");
+app.post('/authenticate', function(req, res){
+    if( req.body.username === ''
+            || req.body.password === '' ){
+        consoloe.log('fill all fields!');
+        return;
+    }
+    db.login(req.body.username, req.body.password, function(error, results){
+        if( error ){
+            console.log(error);
+        } else if( results === true ){
+            req.session.isAuthenticated = true;
+            req.session.username = req.body.username;
+            req.session.password = req.body.password;
+            res.redirect('/account');
+        } else{
+            console.log('problem logging in');
+        }
+    });
+});
+
+app.post('/newAcct', function(req, res){
+    if( req.body.firstName === ''
+            || req.body.lastName === ''
+            || req.body.newUsername === ''
+            || req.body.newPassword === '' ){
+        console.log('Fill in all fields!');
+        return;
+    }
+    var user = {
+        userName: req.newUsername,
+        password: req.newPassword,
+        fName: req.newFirstName,
+        lName: req.newLastName
+    };
+    db.saveUser(user, function(error, results){
+        if( error ){
+            console.log(error);
+        } else{
+            req.session.username = req.newUsername;
+            req.session.password = req.newPassword;
+            req.session.isAuthenticated = true;
+            res.redirect('/account');
+        }
+    });
+});
+
+app.post('/logout', function(req, res){
+    db.logout(req.session.username, function(error){
+        if( error ){
+            console.log(error);
+        }
+        req.session.destroy();
+        res.redirect('/');
+    });
 });
 
 app.get('/index', function(req, res){
     res.render('index', { 
         title: 'Welcome to GuessMe!' 
-    })
+    });
 });
 
 app.get('/game', function(req, res){
+    if(! req.session.isAuthenticated ){
+        res.redirect('/login');
+    }
     db.createGame("Kurt123", "branS2233", "Super-heroes", function(results, error){
         if( error ){
             console.log(error);
-        }else{
+        } else{
             console.log(results);
             res.render('game', { 
                 title: 'New Game',

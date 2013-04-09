@@ -3,16 +3,30 @@ extends layout
 block content
   body
     #wrapper
+      #opponent
       #head
         h1 Welcome to Guess Who?!?
-      #guessWindow.list
-      #chatWindow.list
+      #guessWindow
+        #guessToScroll.list
+      #chatWindow
+        #chatToScroll.list
       center
         table#board
-      #test
-        form(name='guessForm')
-          input#guessInput(type='text', name='guessItem')
-          #guessButton Guess!
-        form(name='chatForm')
-          input#chatInput(type='text', name='chatItem')
-        #chatButton Send!
+      table#formatBottom
+        tr
+          td
+            form(name='guessForm')
+              input#guessInput(type='text', name='guessItem', onkeypress='return runGuess(event)')
+            #guessButton Guess!
+          td#centerCell
+            b
+              | Your final guess!
+              form(name='finalGuessForm')
+                input#finalInput(type='text', name='finalItem', onkeypress='return runFinalGuess(event)')
+              | Beware if you're wrong you lose!
+          td
+            form(name='chatForm')
+              input#chatInput(type='text', name='chatItem', onkeypress='return runChat(event)')
+            #chatButton Send!
+    #yourCard
+      center
