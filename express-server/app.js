@@ -26,7 +26,10 @@ app.configure(function(){
   app.use(require('connect').bodyParser());
   app.use(express.methodOverride());
   app.use(express.cookieParser());
-  app.use(express.session({ secret: 'keyboard cat'}));
+  app.use(express.session({ 
+      cookie: {maxAge: 60000*20},
+      secret: 'dontguessme'
+      }));
   app.use(app.router);
   app.use(require('stylus').middleware(__dirname + '/public'));
   app.use(express.static(path.join(__dirname, 'public')));
@@ -75,7 +78,7 @@ app.get('/login', function(req, res){
 app.post('/authenticate', function(req, res){
     if( req.body.username === ''
             || req.body.password === '' ){
-        consoloe.log('fill all fields!');
+        console.log('fill all fields!');
         return;
     }
     db.login(req.body.username, req.body.password, function(error, results){
@@ -98,6 +101,7 @@ app.post('/newAcct', function(req, res){
             || req.body.newUsername === ''
             || req.body.newPassword === '' ){
         console.log('Fill in all fields!');
+        res.end('error');
         return;
     }
     var user = {
@@ -153,16 +157,17 @@ app.get('/game', function(req, res){
     });
 });
 app.post('/update-game', function(req, res){
-    console.log("got");
-    res.send("whats up?");
-
 });
+
 app.get('/game-state', function(req, res){
     // server state!
 });
 
 app.get('/game-characters', function(req, res){
-    // Pull 2D array of file paths.
+    db.getCharactersByType('Movie Characters', function(error, results){
+        if( error )  console.log(error);
+        else res.send(results);
+    });
 });
 
 app.get('/description', function(req, res){

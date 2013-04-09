@@ -1,6 +1,12 @@
-extends layout
+!!!5
+html
+  head
+    title #{title}
+    link(rel='stylesheet', href='/libs/bootstrap/css/bootstrap.min.css')
+    link(rel='stylesheet', href='stylesheets/stylesheet.css')
+    script(src='/libs/jquery/jquery.min.js')
+    script(type='text/javascript', src='javascripts/GuessQuery.js')
 
-block content
   body
     #wrapper
       #opponent
