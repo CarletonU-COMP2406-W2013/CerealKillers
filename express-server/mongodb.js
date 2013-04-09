@@ -181,7 +181,7 @@ Database.prototype.saveUser = function(user, callback){
         if( error ) callback(error);
         else {
             user_collection.save({ userName: user.userName, fName: user.fName, lName: user.lName,
-                    email: user.email, password: user.password, online: 'yes', currGameID: -1, gameCred: 0 });
+                    password: user.password, online: 'yes', currGameID: -1, gameCred: 0 });
             callback(null);
        }
    });
@@ -239,22 +239,22 @@ Database.prototype.loginByName = function(name, callback){
     });
 };
 
-Database.prototype.loginByNameAndPassword = function(name, pass, callback){
+Database.prototype.login = function(name, pass, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
-            user_collection.find({ userName: name, password: pass }, function(error, callback){
-                if( error ) callback(error);
+            user_collection.find({ userName: name, password: pass }, function(error){
+                if( error ) callback(error, false);
                 else{
                     user_collection.update({ userName: name }, { '$set': { 'online': 'yes' } });
-                    callback(null);
+                    callback(null, true);
                 }
             });
         }
     });
 };
 
-Database.prototype.logoutByName = function(name, callback){
+Database.prototype.logout = function(name, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
@@ -292,7 +292,7 @@ Database.prototype.getCharactersByType = function(type, callback){
     this.getCharactersCollection(function(error, characters_collection){
         if( error ) callback(error);
         else{
-            characters_collection.find({ type: type }, function(error, results, callback){
+            characters_collection.findOne({ type: type }, function(error, results){
                 if( error ) callback(error);
                 else callback(results);
             });

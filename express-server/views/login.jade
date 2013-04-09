@@ -1,4 +1,30 @@
 extends layout
 
 block content
-h1 = 
+    #head 
+        h1 #{title}
+    #description.list
+        h4
+            center
+                 u Login with your username and password:
+
+        form(action='/authenticate', method='post')
+            p Username: &nbsp;
+                input(type='text', name='username')
+            p Password: &nbsp;&nbsp;
+                input(type='password', name='password')
+            button(type='submit') Login
+        h4
+            center
+                u First time playing? Create an account here!
+
+        form(action='/newAcct', method='post')
+            p Full Name: &nbsp;
+                input(type='text', placeholder='First Name', name='firstName')
+                right:5px 
+                    input(type='text', placeholder='Last Name', name='lastName')
+            p Username: &nbsp;
+                input(type='text', name='newUsername')
+            p Password: &nbsp;&nbsp;
+                input(type='password', name='newPassword')
+            button(type='submit') Create Account

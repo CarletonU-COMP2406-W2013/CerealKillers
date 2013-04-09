@@ -1,13 +1,25 @@
 extends layout
 
 block content
-  h1 #{username}'s Account
-  p Welcome #{username}
-  p 
-    |
-    |Users: #{users}
-    |
-  form(action="/logout", method="post")
+    #head
+        h1 #{username}
+
+    - var getArray = function(input){
+    -     var str = '';
+    -     for( var i=0; i<input.length; i++ ){
+    -         str += input[i].userName;
+    -         str += '\n';
+    -     }
+    -     return str;
+    - };
+    
+    #description.list
+        h4
+            center
+                u Online Users: 
+        p #{getArray(users)}
+
+    form(action="/logout", method="post")
         button(type="submit") Logout
-  form(action="/game", method="get")
+    form(action="/game", method="get")
         button(type="submit") Start Game
