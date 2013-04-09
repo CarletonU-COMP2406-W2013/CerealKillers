@@ -11,8 +11,8 @@ var currId = 0;
  * Database object
  */
 Database = function(host, port){
-  this.db= new Db('node-mongodb-guess', new Server(host, port, {auto_reconnect: true}, { }));
-  this.db.open(function(){ });
+  this.db= new Db('node-mongodb-guess', new Server(host, port, {safe:true}, {auto_reconnect:true}));
+  this.db.open(function(){});
 };
 
 
@@ -277,6 +277,7 @@ Database.prototype.getUsersCurrGameByName = function(name, callback){
 };
 
 
+
 /**
  * Save game types as 2d arrays
  * of image paths with 2d arrays of character names.
@@ -294,7 +295,7 @@ Database.prototype.getCharactersByType = function(type, callback){
         else{
             characters_collection.findOne({ type: type }, function(error, results){
                 if( error ) callback(error);
-                else callback(results);
+                else callback(null, results);
             });
         }
     });
