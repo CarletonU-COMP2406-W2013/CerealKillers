@@ -1,0 +1,9 @@
+Dependencies
+=============
+
+- mongodb - A database used to contain all nesscary data for our users and games. We have seprated this database into three collections. The first collection is Game; this collection contains all information about current games in progress such as the game id and particiapints of each game. Second collection contrains all information about each user who has an account with our game. This information includes things like their name and user id. The final collection is different set of charater types to be used during games. when a game is started the users has the chance to select once of these sets in this collection to play the game with. LICENSE - server: GNU General Public License, version 3 (GPL-3.0); interface Apache License, VErsion 2.0
+- node.js - Node is our platform of choice to run our express server. Node is asycronous and event driven, 
+and so is not I/O blocking while handling client side 'GET', 'POST', etc. events. LICENSE - https://raw.github.com/joyent/node/v0.10.3/LICENSE
+- express - We use express as a framework to clean up our web app into a nice looking MVC format (Model/View/Controller) on the server side. It allows us manage things such as views and handle requests. LICENSE - The MIT License
+- jade - Is the view engine for our express server. It also makes for an easier more readble version of HTML. LICENSE - GNU Library or "Lesser" General Public License, version 2.1 (LGPL-2.1)
+- JQuery - We use JQuery to provide functionality to our webpage without having the need to refresh the page. Its used to make our game board useable and to keep track of the current state of the game board. By keeping track of the game board we are able to update both users on the current state of each others game board without giving away vital information. We also use JQuery for keeping track of user guesses and conversations between users.  LICENSE - The MIT License
