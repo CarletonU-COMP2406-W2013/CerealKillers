@@ -13,7 +13,7 @@ function runGuess(e) {
     if (e.keyCode == 13) {
     	var toAdd = $('input[name=guessItem]').val();
 		if((yourTurn == true) && (toAdd != "")){
-			$('#guessWindow').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+			$('#guessToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
 			yourTurn = false;
 		}
 		$('input[name=guessItem]').val("");
@@ -27,7 +27,7 @@ function runChat(e){
 	if(e.keyCode == 13){
 		var toAdd = $('input[name=chatItem]').val();
 		if(toAdd != "")
-			$('#chatWindow').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+			$('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
 		$('input[name=chatItem]').val("");
 		return false;
 	}
@@ -49,8 +49,7 @@ var startUpPic = function(arr){
         for(var i=0;i<4;i++){
             $('#board').append('<tr id=row'+i+'>');
             for(var j=0;j<6;j++){
-                $('#row'+i).append('<td id='+i+''+j+'><img src ='+data.images[i][j]
-                    +'><br>'+data.names[i][j]+' </td>');
+                $('#row'+i).append('<td id='+i+''+j+'><img src ='+element1+'><br> NAME </td>');
             };
             $('#board').append('</tr>');
         };
@@ -73,56 +72,56 @@ var updateOpponentArray = function(opp){
     for(var i=0;i<4;i++){
         for(var j=0;j<6;j++){
                 if(opp[i][j] == false)
-                $('#o'+i+''+j).css('background-color','white');
+                    $('#o'+i+''+j).css('background-color','white');
                 else{
                     $('#o'+i+''+j).css('background-color','black');
                 }
-            };
         };
     };
+};
     /*****************************************
      * 		       DOC IS READY              *
      ******************************************/
-    $(document).ready(function(){
-        //Sets up the card that the user will be answering questions about
-        $('#yourCard').append('<img src ='+element+'><br>'+'The Name');
-        //runs the previously defined methods to set up the game
-        startUpPic(arr);
-        startUpSendArray(toSend);
-        startOpponentArray(opp);
-        updateOpponentArray(opp);
-        //Handles the guess div being clicked
-        $('#guessButton').click(function(){
-            var toAdd = $('input[name=guessItem]').val();
-            if((yourTurn == true) && (toAdd != "")){
-                $('#guessWindow').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
-                yourTurn = false;
-            }
-            $('input[name=guessItem]').val() = "";
-        });
-        //handles the chat div being clicked
-        $('#chatButton').click(function(){
-            var toAdd = $('input[name=chatItem]').val();
-            if(toAdd != "")
-            $('#chatWindow').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
-            $('input[name=chatItem]').val("");
-        });
-        //when the user clicks on a picture it will fade out or in and assign the correct value to that position in the array
-        $("td").click(function(){
-            var counter = $(this).attr('id');
-            var x = counter.substr(0,1);
-            var y = counter.substr(1,2);
-            if(toSend[x][y] == false){
-                $(this).fadeTo("fast", 0.3);
-                toSend[x][y] = true;
-                opp[x][y] = true;
-            }
-            else{
-                $(this).fadeTo("fast", 1.0);
-                toSend[x][y] = false;
-                opp[x][y] = false;
-            }
-            updateOpponentArray(opp);
-            //$('body').append('<div>' + x +' '+y+ '</div>');
-        });
+$(document).ready(function(){
+    //Sets up the card that the user will be answering questions about
+    $('#yourCard').append('<img src ='+element+'><br>'+'The Name');
+    //runs the previously defined methods to set up the game
+    startUpPic(arr);
+    startUpSendArray(toSend);
+    startOpponentArray(opp);
+    updateOpponentArray(opp);
+    //Handles the guess div being clicked
+    $('#guessButton').click(function(){
+        var toAdd = $('input[name=guessItem]').val();
+        if((yourTurn == true) && (toAdd != "")){
+            $('#guessToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+            yourTurn = false;
+        }
+        $('input[name=guessItem]').val() = "";
     });
+    //handles the chat div being clicked
+    $('#chatButton').click(function(){
+        var toAdd = $('input[name=chatItem]').val();
+        if(toAdd != "")
+        $('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+        $('input[name=chatItem]').val("");
+    });
+    //when the user clicks on a picture it will fade out or in and assign the correct value to that position in the array
+    $("td").click(function(){
+        var counter = $(this).attr('id');
+        var x = counter.substr(0,1);
+        var y = counter.substr(1,2);
+        if(toSend[x][y] == false){
+            $(this).fadeTo("fast", 0.3);
+            toSend[x][y] = true;
+            opp[x][y] = true;
+        }
+        else{
+            $(this).fadeTo("fast", 1.0);
+            toSend[x][y] = false;
+            opp[x][y] = false;
+        }
+        updateOpponentArray(opp);
+        //$('body').append('<div>' + x +' '+y+ '</div>');
+    });
+});

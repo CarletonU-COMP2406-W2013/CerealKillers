@@ -12,6 +12,7 @@ html
       #opponent
       #head
         h1 Welcome to Guess Who?!?
+      <br/>
       #guessWindow
         #guessToScroll.list
       #chatWindow
@@ -26,13 +27,15 @@ html
             #guessButton Guess!
           td#centerCell
             b
-              | Your final guess!
+              |Your final guess!
               form(name='finalGuessForm')
                 input#finalInput(type='text', name='finalItem', onkeypress='return runFinalGuess(event)')
-              | Beware if you're wrong you lose!
+              |Beware if you're wrong you lose!
           td
             form(name='chatForm')
               input#chatInput(type='text', name='chatItem', onkeypress='return runChat(event)')
             #chatButton Send!
-    #yourCard
+        tr
+          td
+            #yourCard
       center
