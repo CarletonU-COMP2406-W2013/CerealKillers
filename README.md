@@ -47,3 +47,4 @@ Dependinces:
 - node
 - express
 - jade
+- jQuery
