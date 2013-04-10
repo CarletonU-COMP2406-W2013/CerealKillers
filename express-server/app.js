@@ -43,7 +43,7 @@ var db = new Database('localhost', 27017);
 
 
 app.get('/', function(req, res, next){
-    //setupMovieChars();
+    setupMovieChars();
     if( req.session.isAuthenticated ){
         res.redirect('/account');
     } else{
