@@ -136,9 +136,7 @@ $(document).ready(function(){
         if(toAdd != "")
         $.ajax({
             type: "POST",
-            beforeSend: function(request){
-                request.setRequestHeader("message", toAdd);
-            },
+            data: {message: toAdd},
             url: '/update-chat',
             success: function(data){
                 $.get('/get-chat', function(data){

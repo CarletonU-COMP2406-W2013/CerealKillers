@@ -142,15 +142,17 @@ app.post('/new-game', function(req, res){
     if( !req.session.isAuthenticated ){
         res.redirect('/login');
     } else if( req.body.opponent === ''){
-        res.redirect('/login');
+        console.log('no opp');//res.end();
+    } else if( req.body.opponent === req.session.username ){
+        console.log('opponent is user');//res.end()
     } else{ 
         // Double check that the opponent exists!
         db.containsUser(req.body.opponent, function(error, results){
-            if( error ) res.redirect('/login');
+            if( error ) console.log('error');//res.end();
             else if( results ){
                 db.createGame(req.session.username, req.body.opponent, 'Movie Characters', 
                         function(error, results){
-                    if( error ) return;
+                    if( error ) console.log('error2');
                     else if( results ){
                         console.log(results);
                         req.session.opponent = req.body.opponent;
@@ -158,6 +160,8 @@ app.post('/new-game', function(req, res){
                         res.redirect('/game');
                     }
                 });
+            } else{
+                console.log('else');// res.end();
             }
         });
     }
@@ -181,7 +185,7 @@ app.get('/game', function(req, res){
 app.post('/update-chat', function(req, res){
     var str = req.session.username;
     str += ': ';
-    str += req.message;
+    str += req.body.message;
     console.log(str);
     db.updateChatById(req.session.gameID, str, 
     function(error, results){

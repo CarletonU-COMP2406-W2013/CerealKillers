@@ -80,7 +80,12 @@ Database.prototype.createGame = function(name1, name2, type, callback){
             /* return the name game instance (double check finding it) */
             that.findGame(user1.name, user2.name, function(error, results){
                 if( error ) callback(error);
-                else callback(null, results);
+                else{
+                    that.addGameToUser(results._id, user1.name, function(callback){
+                        
+                    });
+                    callback(null, results);
+                }            
             });
         }
     });
