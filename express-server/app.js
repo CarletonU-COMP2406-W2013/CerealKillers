@@ -42,7 +42,11 @@ app.configure('development', function(){
 var db = new Database('localhost', 27017);
 
 app.get('/', function(req, res, next){
+<<<<<<< HEAD
     console.log(db);
+=======
+    setupMovieChars();
+>>>>>>> e6e04c796f00389851b77019fe0be7f40fc9ecc2
     if( req.session.isAuthenticated ){
         res.redirect('/account');
     } else{
