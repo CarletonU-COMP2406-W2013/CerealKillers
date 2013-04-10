@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var db = require('./mongodb').Database;
+var db = require('./guess-db').Database;
 
 var express = require('express')
   , routes = require('./routes')
@@ -54,14 +54,12 @@ app.get('/account', function(req, res){
     if(! req.session.isAuthenticated ){
         res.redirect('/login');
     }
-    db.userListing(function (error, results){
+    db.usersArray(function(error, results){
         if( error ){
             console.log(error);
         } else{
-            var json = JSON.stringify(results);
-            var users = JSON.parse(json);
-            res.render("account", {
-                title: 'Account',
+            res.render('account', {
+                title: 'My Account',
                 username: req.session.username,
                 users: results
             });
@@ -84,7 +82,8 @@ app.post('/authenticate', function(req, res){
     db.login(req.body.username, req.body.password, function(error, results){
         if( error ){
             console.log(error);
-        } else if( results === true ){
+        } else if( results ){
+            console.log(results);
             req.session.isAuthenticated = true;
             req.session.username = req.body.username;
             req.session.password = req.body.password;
@@ -105,17 +104,17 @@ app.post('/newAcct', function(req, res){
         return;
     }
     var user = {
-        userName: req.newUsername,
-        password: req.newPassword,
-        fName: req.newFirstName,
-        lName: req.newLastName
+        userName: req.body.newUsername,
+        password: req.body.newPassword,
+        fName: req.body.firstName,
+        lName: req.body.lastName
     };
     db.saveUser(user, function(error, results){
         if( error ){
             console.log(error);
         } else{
-            req.session.username = req.newUsername;
-            req.session.password = req.newPassword;
+            req.session.username = req.body.newUsername;
+            req.session.password = req.body.newPassword;
             req.session.isAuthenticated = true;
             res.redirect('/account');
         }
@@ -141,21 +140,15 @@ app.get('/index', function(req, res){
 app.get('/game', function(req, res){
     if(! req.session.isAuthenticated ){
         res.redirect('/login');
+    } else{ 
+        res.render('game', { 
+            title: 'New Game',
+            user: 'Kurt123',
+            opponent: 'branS2233'
+        });
     }
-    db.createGame("Kurt123", "branS2233", "Super-heroes", function(results, error){
-        if( error ){
-            console.log(error);
-        } else{
-            console.log(results);
-            res.render('game', { 
-                title: 'New Game',
-                gameID: results,
-                user: 'Kurt123',
-                opponent: 'branS2233'
-            });
-        }
-    });
 });
+
 app.post('/update-game', function(req, res){
 });
 
