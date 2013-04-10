@@ -8,7 +8,7 @@ block content
     -     var str = '';
     -     for( var i=0; i<input.length; i++ ){
     -         str += input[i].userName;
-    -         str += '\n';
+    -         str += ', ';
     -     }
     -     return str;
     - };
@@ -21,5 +21,7 @@ block content
 
     form(action="/logout", method="post")
         button(type="submit") Logout
-    form(action="/game", method="get")
+        
+    form(action="/new-game", method="post")
+        input(type="text", name="opponent") 
         button(type="submit") Start Game

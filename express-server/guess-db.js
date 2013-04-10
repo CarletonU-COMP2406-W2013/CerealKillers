@@ -16,11 +16,12 @@ Database = function(host, port){
 };
 
 
+
 /**
  * Game functions
  */
 Database.prototype.getGames = function(callback){
-    this.db.collection('game_collection', function(error, game_collection){
+    this.db.collection('games', function(error, game_collection){
         if( error ) callback(error);
         else callback(null, game_collection);
     });
@@ -28,14 +29,22 @@ Database.prototype.getGames = function(callback){
 
 /* form a game between two users */
 Database.prototype.createGame = function(name1, name2, type, callback){
+    /* if a game already exists between these users, return it */
+    var that = this;
+    this.findGame(name1, name2, function(error, results){
+        if( results ) callback(results);
+    });
     this.getGames(function(error, game_collection){
+        game_collection.findOne({ gameID: 1 }, function(error, results){
+            if( results )callback(1);
+        });
         if( error ) callback(error);
         else {
             /* create two game boards as 2D arrays */
             var b1 = new Array(6);
             var b2 = new Array(6);
 
-            for( var i=0; i<10; i++ ){
+            for( var i=0; i<4; i++ ){
                 b1[i] = new Array(4);
                 b2[i] = new Array(4);
 
@@ -45,21 +54,74 @@ Database.prototype.createGame = function(name1, name2, type, callback){
                     b2[i][j] = true;
                 }
             }
+            /* choose a random card for each player */
+            var x1 = Math.floor((Math.random()*4));
+            var y1 = Math.floor((Math.random()*6));
+            var x2 = Math.floor((Math.random()*4));
+            var y2 = Math.floor((Math.random()*6));
+            var p1 = '['+x1+', '+y1+']';
+            var p2 = '['+x2+', '+y2+']';
             /* create the user objects */
             var user1 = {
                 name:  name1,
                 board: b1,
+                character: p1,
                 isTurn: true
             };
             var user2 = {
                 name: name2,
                 board: b2,
+                character: p2,
                 isTurn: false
             };
             currId++; // increment id
-            game_collection.save({ gameID: currId, gameType: type, player1: user1, player2: user2,
-                    guesses: [], chat: [] });
-            callback(null, currId);
+            game_collection.save({ gameType: type, player1: user1, player2: user2,
+                guesses: [], chat: [] });
+            /* return the name game instance (double check finding it) */
+            that.findGame(user1.name, user2.name, function(error, results){
+                if( error ) callback(error);
+                else callback(null, results);
+            });
+        }
+    });
+};
+
+/* find a game instance that contains the two names */
+/* useful to check if game exists */
+Database.prototype.findGame = function(name1, name2, callback){
+    this.getGames(function(error, game_collection){
+        if( error ) callback(error);
+        else{
+            game_collection.findOne({ 'player1.name': name1, 'player2.name': name2 },
+                    function(error, results){
+                if( error || !results ){ 
+                    game_collection.findOne({ 'player1.name': name2, 'player2.name': name1 },
+                            function(error, results){
+                        if( error || !results ) callback(error);
+                        else callback(null, results);
+                    });
+                }
+                else callback(null, results);
+            });
+        }
+    });
+};
+
+Database.prototype.findUsersGame = function(name, callback){
+    this.getGame(function(error, game_cllection){
+        if( error ) callback(error);
+        else{
+            game_collection.findOne({ 'player1.name': name },
+                    function(error, results){
+                if( error ){ 
+                    game_collection.findOne({ 'player2.name': name },
+                            function(error, results){
+                        if( error ) callback(error);
+                        else callback(null, results);
+                    });
+                }
+                else callback(null, results);
+            });
         }
     });
 };
@@ -93,7 +155,7 @@ Database.prototype.updateGame = function(id, name, board, guess, isOppTurn, call
                 } else (callback('error with users'));
                 game_collection.update({ gameID: id }, { '$set': { player1: user1 } });
                 game_collection.update({ gameID: id }, { '$set': { player2: user2 } });
-                this.findGameById(id, callback); //all was successful, return this game
+                findGameById(id, callback); //all was successful, return this game
             }
         }
     });
@@ -105,7 +167,22 @@ Database.prototype.updateChatById = function(id, string, callback){
         if( error ) callback(error);
         else{
             game_collection.update({ gameID: id }, { '$push': { 'chat': string } });
-            callback(null);
+            callback(null, 'success');
+        }
+    });
+};
+
+/* get game's chat feed */
+Database.prototype.findChatById = function(id, callback){
+    this.getGames(function(error, game_collection){
+        if( error ) callback(error);
+        else{
+            game_collection.findOne({ gameID: id }, function(error, results){
+                if( error ) callback(error);
+                else{
+                    callback(null, results.chat);
+                }
+            });
         }
     });
 };
@@ -117,7 +194,7 @@ Database.prototype.findGameById = function(id, callback){
         else {
             game_collection.findOne({ gameID: id }, function(error, result){
                 if( error ) callback(error);
-                else callback(null, result);
+                else callback(null, results);
             });
         }
     });
@@ -143,6 +220,9 @@ Database.prototype.endGameById = function(id, callback){
 
 /**
  * User functions
+            addGameToUser(currId, name1, function(error, results){
+                if( error ) callback(error);
+            });
  */
 Database.prototype.getUsers = function(callback){
     this.db.collection('users', function(error, user_collection){
@@ -210,13 +290,34 @@ Database.prototype.login = function(name, pass, callback){
     });
 };
 
+Database.prototype.containsUser = function(name, callback){
+    this.getUsers(function(error, user_collection){
+        if( error ) callback(error);
+        else{
+            user_collection.findOne({ userName: name }, function(error, results){
+                if( error ) callback(error);
+                else callback(null, results);
+            });
+        }
+    });
+};
+
 Database.prototype.logout = function(name, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
-            user_collection.update({ userName: name }, { '$set': { 'online': 'no' } });
             callback(null, 'success');
        }
+    });
+};
+
+Database.prototype.addGameToUser = function(id, name, callback){
+    this.getUsers(function(error, user_collection){
+        if( error ) callback(error);
+        else{
+            user_collection.update({ userName: name }, {'$push': { gameIDs: id } })
+            callback(null, 'success');
+        }
     });
 };
 
@@ -251,12 +352,12 @@ Database.prototype.getCharactersByType = function(type, callback){
     this.getCharactersCollection(function(error, characters_collection){
         if( error ) callback(error);
         else{
-        characters_collection.findOne({ type: type }, function(error, results){
-            if( error ) callback(error);
-            else callback(null, results);
-        });
-    }
-});
+            characters_collection.findOne({ type: type }, function(error, results){
+                if( error ) callback(error);
+                else callback(null, results);
+            });
+        }
+    });
 };
 
 Database.prototype.saveCharacterSetByType = function(type, arr1, arr2, callback){

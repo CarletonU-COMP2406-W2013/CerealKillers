@@ -26,8 +26,19 @@ function runGuess(e) {
 function runChat(e){
 	if(e.keyCode == 13){
 		var toAdd = $('input[name=chatItem]').val();
-		if(toAdd != "")
-			$('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+		if(toAdd != ""){
+            $('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+            $.ajax({
+                type: "POST",
+                beforeSend: function(request){
+                    request.setRequestHeader("message", toAdd);
+                },
+                url: '/update-chat',
+                success: function(data){
+                    alert(data);
+                }
+            });
+        }
 		$('input[name=chatItem]').val("");
 		return false;
 	}
@@ -103,8 +114,14 @@ $(document).ready(function(){
     updateOpponentArray(opp);
     //Handles the guess div being clicked
     window.setInterval(function() {
-        $.post('/update-game', function(){});
-    }, 5); //5 seconds
+        $.get('/get-chat', function(data){
+            $('#chatToScroll').val("");
+             for( var i=0; i<data.chat.length; i++ ){
+                $('#chatToScroll').append('<div class ="item">' +data.chat[i]);
+                alert(data);
+             }
+        });
+    }, 5000); //5 seconds
     $('#guessButton').click(function(){
         var toAdd = $('input[name=guessItem]').val();
         if((yourTurn == true) && (toAdd != "")){
@@ -117,7 +134,22 @@ $(document).ready(function(){
     $('#chatButton').click(function(){
         var toAdd = $('input[name=chatItem]').val();
         if(toAdd != "")
-        $('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
+        $.ajax({
+            type: "POST",
+            beforeSend: function(request){
+                request.setRequestHeader("message", toAdd);
+            },
+            url: '/update-chat',
+            success: function(data){
+                $.get('/get-chat', function(data){
+                    $('#chatToScroll').val;("");
+                    for( var i=0; i<data.length; i++ ){
+                        $('#chatToScroll').append('<div class ="item">' +data[i]);
+                    }
+                });
+            }
+        });
+        //$('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
         $('input[name=chatItem]').val("");
     });
     //when the user clicks on a picture it will fade out or in and assign the correct value to that position in the array
