@@ -5,7 +5,7 @@
  * may perform other admin specific tasks 
  * that could be risky if given to the client in 'app.js'
  */
-var db = require('./mongodb').Database;
+var db = require('./guess-db').Database;
 var db = new Database('localhost', 27017);
 
 /**

@@ -55,13 +55,15 @@ var startUpSendArray = function(ts){
 var startUpPic = function(arr){
     // pull the characters from db
     $.get('/game-characters', function(data){
+        arr = data;
         for(var i=0;i<4;i++){
             $('#board').append('<tr id=row'+i+'>');
             for(var j=0;j<6;j++){
-                $('#row'+i).append('<td id='+i+''+j+'><img src ='+element1+'><br> NAME </td>');
-            };
+                $('#row'+i).append('<td id='+i+''+j+'><img src ='+data.images[i][j]+'><br>'
+                    +data.names[i][j]+'</td>');
+            }
             $('#board').append('</tr>');
-        };
+        }
     }); 
 };
 var startOpponentArray = function(opp){
@@ -123,6 +125,7 @@ $(document).ready(function(){
         var counter = $(this).attr('id');
         var x = counter.substr(0,1);
         var y = counter.substr(1,2);
+        alert(x+' '+y);
         if(toSend[x][y] == false){
             $(this).fadeTo("fast", 0.3);
             toSend[x][y] = true;
