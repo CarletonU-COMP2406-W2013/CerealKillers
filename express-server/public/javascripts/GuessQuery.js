@@ -30,9 +30,7 @@ function runChat(e){
             $('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
             $.ajax({
                 type: "POST",
-                beforeSend: function(request){
-                    request.setRequestHeader("message", toAdd);
-                },
+                data: { message: toAdd },
                 url: '/update-chat',
                 success: function(data){
                     alert(data);
@@ -70,7 +68,7 @@ var startUpPic = function(arr){
         for(var i=0;i<4;i++){
             $('#board').append('<tr id=row'+i+'>');
             for(var j=0;j<6;j++){
-                $('#row'+i).append('<td id='+i+''+j+'><img src ='+data.images[i][j]+'><br>'
+                $('#row'+i).append('<td class = "boardElement" id='+i+''+j+'><img src ='+data.images[i][j]+'><br>'
                     +data.names[i][j]+'</td>');
             }
             $('#board').append('</tr>');
@@ -115,8 +113,8 @@ $(document).ready(function(){
     //Handles the guess div being clicked
     window.setInterval(function() {
         $.get('/get-chat', function(data){
-            $('#chatToScroll').val("");
-             for( var i=0; i<data.chat.length; i++ ){
+            $('#chatToScroll').empty();
+             for( var i=0; i<data.length; i++ ){
                 $('#chatToScroll').append('<div class ="item">' +data.chat[i]);
                 alert(data);
              }
@@ -134,6 +132,7 @@ $(document).ready(function(){
     $('#chatButton').click(function(){
         var toAdd = $('input[name=chatItem]').val();
         if(toAdd != "")
+        $('#chatToScroll').empty();
         $.ajax({
             type: "POST",
             data: {message: toAdd},
@@ -151,22 +150,25 @@ $(document).ready(function(){
         $('input[name=chatItem]').val("");
     });
     //when the user clicks on a picture it will fade out or in and assign the correct value to that position in the array
-    $("td").click(function(){
-        var counter = $(this).attr('id');
-        var x = counter.substr(0,1);
-        var y = counter.substr(1,2);
-        alert(x+' '+y);
-        if(toSend[x][y] == false){
-            $(this).fadeTo("fast", 0.3);
-            toSend[x][y] = true;
-            opp[x][y] = true;
+    $(document).on('click', 'td', function(){
+        var check = $(this).attr('class');
+        if(check == "boardElement"){
+            var counter = $(this).attr('id');
+            var x = counter.substr(0,1);
+            var y = counter.substr(1,2);
+            alert(x+' '+y);
+            if(toSend[x][y] == false){
+                $(this).fadeTo("fast", 0.3);
+                toSend[x][y] = true;
+                opp[x][y] = true;
+            }
+            else{
+                $(this).fadeTo("fast", 1.0);
+                toSend[x][y] = false;
+                opp[x][y] = false;
+            }
+            updateOpponentArray(opp);
         }
-        else{
-            $(this).fadeTo("fast", 1.0);
-            toSend[x][y] = false;
-            opp[x][y] = false;
-        }
-        updateOpponentArray(opp);
         //$('body').append('<div>' + x +' '+y+ '</div>');
     });
 });

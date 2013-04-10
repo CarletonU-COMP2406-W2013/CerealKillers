@@ -41,9 +41,8 @@ app.configure('development', function(){
 
 var db = new Database('localhost', 27017);
 
-
 app.get('/', function(req, res, next){
-    //setupMovieChars();
+    console.log(db);
     if( req.session.isAuthenticated ){
         res.redirect('/account');
     } else{
@@ -226,6 +225,7 @@ app.get('/description', function(req, res){
     })
 });
 
+
 var setupMovieChars = function(){
     /* The array of image paths */
     var imgArr = new Array(4);
@@ -307,4 +307,5 @@ var setupMovieChars = function(){
 
 http.createServer(app).listen(app.get('port'), function(){
     console.log("Express server listening on port " + app.get('port'));
+    console.log(db);
 });
