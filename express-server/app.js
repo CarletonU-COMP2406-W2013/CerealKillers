@@ -6,37 +6,37 @@
 var db = require('./guess-db').Database;
 
 var express = require('express')
-  , routes = require('./routes')
-  , account = require('./routes/account')
-  , game = require('./routes/game')
-  , index = require('./routes/index')
-  , login = require('./routes/login')
-  , description = require('./routes/description')
-  , http = require('http')
-  , path = require('path');
+, routes = require('./routes')
+, account = require('./routes/account')
+, game = require('./routes/game')
+, index = require('./routes/index')
+, login = require('./routes/login')
+, description = require('./routes/description')
+, http = require('http')
+, path = require('path');
 
 var app = express();
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 3000);
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'jade');
-  app.use(express.favicon());
-  app.use(express.logger('dev'));
-  app.use(require('connect').bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.cookieParser());
-  app.use(express.session({ 
-      cookie: {maxAge: 60000*20},
-      secret: 'dontguessme'
-      }));
-  app.use(app.router);
-  app.use(require('stylus').middleware(__dirname + '/public'));
-  app.use(express.static(path.join(__dirname, 'public')));
+    app.set('port', process.env.PORT || 3000);
+    app.set('views', __dirname + '/views');
+    app.set('view engine', 'jade');
+    app.use(express.favicon());
+    app.use(express.logger('dev'));
+    app.use(require('connect').bodyParser());
+    app.use(express.methodOverride());
+    app.use(express.cookieParser());
+    app.use(express.session({ 
+    cookie: {maxAge: 60000*20},
+    secret: 'dontguessme'
+    }));
+    app.use(app.router);
+    app.use(require('stylus').middleware(__dirname + '/public'));
+    app.use(express.static(path.join(__dirname, 'public')));
 });
 
 app.configure('development', function(){
-  app.use(express.errorHandler());
+    app.use(express.errorHandler());
 });
 
 var db = new Database('localhost', 27017);
@@ -52,7 +52,7 @@ app.get('/', function(req, res, next){
 });
 
 app.get('/account', function(req, res){
-    if(! req.session.isAuthenticated ){
+    if( !req.session.isAuthenticated ){
         res.redirect('/login');
     }
     db.usersArray(function(error, results){
@@ -76,7 +76,7 @@ app.get('/login', function(req, res){
 
 app.post('/authenticate', function(req, res){
     if( req.body.username === ''
-            || req.body.password === '' ){
+    || req.body.password === '' ){
         console.log('fill all fields!');
         return;
     }
@@ -97,9 +97,9 @@ app.post('/authenticate', function(req, res){
 
 app.post('/newAcct', function(req, res){
     if( req.body.firstName === ''
-            || req.body.lastName === ''
-            || req.body.newUsername === ''
-            || req.body.newPassword === '' ){
+    || req.body.lastName === ''
+    || req.body.newUsername === ''
+    || req.body.newPassword === '' ){
         console.log('Fill in all fields!');
         res.end('error');
         return;
@@ -138,16 +138,68 @@ app.get('/index', function(req, res){
     });
 });
 
-app.get('/game', function(req, res){
-    if(! req.session.isAuthenticated ){
+app.post('/new-game', function(req, res){
+    if( !req.session.isAuthenticated ){
+        res.redirect('/login');
+    } else if( req.body.opponent === ''){
         res.redirect('/login');
     } else{ 
-        res.render('game', { 
-            title: 'New Game',
-            user: 'Kurt123',
-            opponent: 'branS2233'
+        // Double check that the opponent exists!
+        db.containsUser(req.body.opponent, function(error, results){
+            if( error ) res.redirect('/login');
+            else if( results ){
+                db.createGame(req.session.username, req.body.opponent, 'Movie Characters', 
+                        function(error, results){
+                    if( error ) return;
+                    else if( results ){
+                        console.log(results);
+                        req.session.opponent = req.body.opponent;
+                        req.session.game = results;
+                        res.redirect('/game');
+                    }
+                });
+            }
         });
     }
+});
+
+app.post('/join-game', function(req, res){
+});
+
+app.get('/game', function(req, res){
+    if ( !req.session.isAuthenticated ){
+        res.redirect('/login');
+    } else{
+        res.render('game', { 
+            title: 'New Game',
+            user: req.session.username,
+            opponent: req.session.opponent
+        });
+    }
+});
+
+app.post('/update-chat', function(req, res){
+    var str = req.session.username;
+    str += ': ';
+    str += req.message;
+    console.log(str);
+    db.updateChatById(req.session.gameID, str, 
+    function(error, results){
+        if( error ) console.log(error);
+        else{
+            res.send(results);
+        }
+    });
+});
+
+app.get('/get-chat', function(req, res){
+    db.findChatById(req.session.gameID, function(error, results){
+        if( error ) callback(error);
+        else{
+            console.log(results);
+            res.send(results);
+        }
+    });
 });
 
 app.post('/update-game', function(req, res){
@@ -159,7 +211,7 @@ app.get('/game-state', function(req, res){
 
 app.get('/game-characters', function(req, res){
     db.getCharactersByType('Movie Characters', function(error, results){
-        if( error )  console.log(error);
+        if( error ) console.log(error);
         else res.send(results);
     });
 });
