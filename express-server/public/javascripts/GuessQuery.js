@@ -135,10 +135,6 @@ $(document).ready(function(){
         $('#chatToScroll').empty();
         $.ajax({
             type: "POST",
-<<<<<<< HEAD
-            data: {message: toAdd},
-=======
->>>>>>> e6e04c796f00389851b77019fe0be7f40fc9ecc2
             url: '/update-chat',
             data: {message: toAdd},
             success: function(data){
@@ -154,20 +150,12 @@ $(document).ready(function(){
         $('input[name=chatItem]').val("");
     });
     //when the user clicks on a picture it will fade out or in and assign the correct value to that position in the array
-<<<<<<< HEAD
-    $(document).on('click', 'td', function(){
-=======
     $(document).on("click", "td",function(){
->>>>>>> e6e04c796f00389851b77019fe0be7f40fc9ecc2
         var check = $(this).attr('class');
         if(check == "boardElement"){
             var counter = $(this).attr('id');
             var x = counter.substr(0,1);
             var y = counter.substr(1,2);
-<<<<<<< HEAD
-            alert(x+' '+y);
-=======
->>>>>>> e6e04c796f00389851b77019fe0be7f40fc9ecc2
             if(toSend[x][y] == false){
                 $(this).fadeTo("fast", 0.3);
                 toSend[x][y] = true;
