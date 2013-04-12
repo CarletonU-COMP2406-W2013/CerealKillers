@@ -12,6 +12,28 @@ var yourTurn = true;
 function runGuess(e) {
     if (e.keyCode == 13) {
     	var toAdd = $('input[name=guessItem]').val();
+        $.ajax({
+            type: "POST",
+            url: '/update-game',
+            data: {guess: toAdd, board: toSend, isOppTurn: true},
+            success: function(data){
+                $('#guessToScroll').empty();
+                for( var i=0; i<data.guesses.length; i++){
+                    $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
+                }
+                if( data.player1.name === user.userName ){
+                    yourTurn = data.player1.isTurn;
+                    toSend = data.player1.board;
+                    opp = data.player2.board;
+                    updateOpponentArray(opp);
+                } else{
+                    yourTurn = data.player2.isTurn;
+                    toSend = data.player2.board;
+                    opp = data.player1.board;
+                    updateOpponentArray(opp);
+                }
+            }   
+        });
 		if((yourTurn == true) && (toAdd != "")){
 			$('#guessToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
 			yourTurn = false;
@@ -27,13 +49,15 @@ function runChat(e){
 	if(e.keyCode == 13){
 		var toAdd = $('input[name=chatItem]').val();
 		if(toAdd != ""){
-            $('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
             $.ajax({
                 type: "POST",
                 data: { message: toAdd },
                 url: '/update-chat',
                 success: function(data){
-                    alert(data);
+                    $('#chatToScroll').empty();
+                    for( var i=0; i<data.length; i++ ){
+                        $('#chatToScroll').append('<div class ="item">' +data[i]);
+                    }
                 }
             });
         }
@@ -50,12 +74,12 @@ function runFinalGuess(e){
         return false;
     }
 }
-//initializes the two dimensional array of boolean values "toSend" all to false
+//initializes the two dimensional array of boolean values "toSend" all to true
 var startUpSendArray = function(ts){
 	for(var i=0;i<4;i++){
 		ts[i] = new Array();
 		for(var j=0;j<6;j++){
-			ts[i][j] = false;
+			ts[i][j] = true;
 		}
 	}
 }
@@ -103,6 +127,34 @@ var updateOpponentArray = function(opp){
      * 		       DOC IS READY              *
      *****************************************/
 $(document).ready(function(){
+    $.post('/update-chat', function(data){
+        $('#chatToScroll').empty();
+        for( var i=0; i<data.length; i++ ){
+            $('#chatToScroll').append('<div class ="item">' +data[i]);
+        }
+    });
+    $.ajax({
+        type: "POST",
+        url: '/update-game',
+        data: {guess: null, board: toSend, isOppTurn: false},
+        success: function(data){
+            $('#guessToScroll').empty();
+            for( var i=0; i<data.guesses.length; i++){
+                $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
+            }
+            if( data.player1.name === user.userName ){
+                yourTurn = data.player1.isTurn;
+                toSend = data.player1.board;
+                opp = data.player2.board;
+                updateOpponentArray(opp);
+            } else{
+                yourTurn = data.player2.isTurn;
+                toSend = data.player2.board;
+                opp = data.player1.board;
+                updateOpponentArray(opp);
+            }
+        }
+    });
     //Sets up the card that the user will be answering questions about
     $('#yourCard').append('<img src ='+element+'><br>'+'The Name');
     //runs the previously defined methods to set up the game
@@ -112,14 +164,37 @@ $(document).ready(function(){
     updateOpponentArray(opp);
     //Handles the guess div being clicked
     window.setInterval(function() {
-        $.get('/get-chat', function(data){
+        $.post('/update-chat', function(data){
             $('#chatToScroll').empty();
              for( var i=0; i<data.length; i++ ){
-                $('#chatToScroll').append('<div class ="item">' +data.chat[i]);
-                alert(data);
+                $('#chatToScroll').append('<div class ="item">' +data[i]);
              }
         });
-    }, 5000); //5 seconds
+    }, 3000); // 3 seconds
+    window.setInterval(function(){
+        $.ajax({
+            type: "POST",
+            url: '/update-game',
+            data: {guess: null, board: toSend, isOppTurn: false},
+            success: function(data){
+                $('#guessToScroll').empty();
+                for( var i=0; i<data.guesses.length; i++){
+                    $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
+                }
+                if( data.player1.name === user.userName ){
+                    yourTurn = data.player1.isTurn;
+                    toSend = data.player1.board;
+                    opp = data.player2.board;
+                    updateOpponentArray(opp);
+                } else{
+                    yourTurn = data.player2.isTurn;
+                    toSend = data.player2.board;
+                    opp = data.player1.board;
+                    updateOpponentArray(opp);
+                }
+            }
+        });
+    }, 5000); // 5 seconds
     $('#guessButton').click(function(){
         var toAdd = $('input[name=guessItem]').val();
         if((yourTurn == true) && (toAdd != "")){
@@ -131,21 +206,19 @@ $(document).ready(function(){
     //handles the chat div being clicked
     $('#chatButton').click(function(){
         var toAdd = $('input[name=chatItem]').val();
-        if(toAdd != "")
-        $('#chatToScroll').empty();
-        $.ajax({
-            type: "POST",
-            url: '/update-chat',
-            data: {message: toAdd},
-            success: function(data){
-                $.get('/get-chat', function(data){
-                    $('#chatToScroll').val;("");
+        if(toAdd != ""){
+            $.ajax({
+                type: "POST",
+                url: '/update-chat',
+                data: {message: toAdd},
+                success: function(data){
+                    $('#chatToScroll').empty();
                     for( var i=0; i<data.length; i++){
                         $('#chatToScroll').append('<div class ="item">' +data[i]);
                     }
-                });
-            }
-        });
+                }
+            });
+        }
         //$('#chatToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
         $('input[name=chatItem]').val("");
     });
@@ -159,14 +232,14 @@ $(document).ready(function(){
             if(toSend[x][y] == false){
                 $(this).fadeTo("fast", 0.3);
                 toSend[x][y] = true;
-                opp[x][y] = true;
+                //opp[x][y] = true;
             }
             else{
                 $(this).fadeTo("fast", 1.0);
                 toSend[x][y] = false;
-                opp[x][y] = false;
+                //opp[x][y] = false;
             }
-            updateOpponentArray(opp);
+            //updateOpponentArray(opp);
         }
         //$('body').append('<div>' + x +' '+y+ '</div>');
     });

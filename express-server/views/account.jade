@@ -2,13 +2,31 @@ extends layout
 
 block content
     #head
-        h1 #{username}
+        h1 #{user.userName}
 
-    - var getArray = function(input){
+    - var populateUsers = function(input, exclude){
     -     var str = '';
     -     for( var i=0; i<input.length; i++ ){
-    -         str += input[i].userName;
-    -         str += ', ';
+    -         if( input[i].userName !== exclude ){
+    -             str += input[i].userName;
+    -             if( i+1 !== input.length ){
+    -                 str += ', ';
+    -             }
+    -         }
+    -     }
+    -     return str;
+    - };
+
+    - var populateGames = function(input){
+    -     var str = '';
+    -     for( var i=0; i<input.length; i++ ){
+    -         /*if( input[i].newReq ){
+    -             str += '*';
+    -         }*/
+    -         str += '[ '+input[i].type+': '+input[i].opp+' ]';
+    -         if( i+1 !== input.length ){
+    -             str += ', ';
+    -         }
     -     }
     -     return str;
     - };
@@ -16,12 +34,23 @@ block content
     #description.list
         h4
             center
-                u Online Users: 
-        p #{getArray(users)}
-
+                u All Users: 
+        p #{populateUsers(usersArray, user.userName)}
+    
+    #description.list
+        h4
+            center
+                u Active Games:
+        center
+            //p New Requests are denoted by an '*'
+        p #{populateGames(user.games)}
+    
     form(action="/logout", method="post")
-        button(type="submit") Logout
-        
-    form(action="/new-game", method="post")
-        input(type="text", name="opponent") 
-        button(type="submit") Start Game
+        button(type="submit") Logout 
+    
+    center
+        form(action="/new-game", method="post")
+            select
+                option(value="Movie Characters") Movie Characters
+            input(type="text", placeholder="Opponent", name="opponent") 
+            button(type="submit") Game!
