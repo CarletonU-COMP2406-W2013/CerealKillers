@@ -27,8 +27,8 @@ app.configure(function(){
     app.use(express.methodOverride());
     app.use(express.cookieParser());
     app.use(express.session({ 
-    cookie: {maxAge: 60000*20},
-    secret: 'dontguessme'
+        cookie: {maxAge: 60000*20}, // 20 mins
+        secret: 'dontguessme!'
     }));
     app.use(app.router);
     app.use(require('stylus').middleware(__dirname + '/public'));
@@ -41,58 +41,71 @@ app.configure('development', function(){
 
 var db = new Database('localhost', 27017);
 
+/* GET this site */
 app.get('/', function(req, res, next){
-    if( req.session.isAuthenticated ){
+    if( req.session.user ){
         res.redirect('/account');
     } else{
         res.redirect('/index');
     }
 });
 
+/* GET account page */
 app.get('/account', function(req, res){
-    if( !req.session.isAuthenticated ){
+    if( !req.session.user ){
         res.redirect('/login');
+    } else{
+        db.getGameTypes(function(error, types){
+            if( error ) console.log(error);
+            else{
+                console.log(types);
+                db.usersArray(function(error, results){
+                    if( error ) console.log(error);
+                    else{
+                        res.render('account', {
+                            title: 'Account - GuessMe!',
+                            user: req.session.user,
+                            usersArray: results,
+                            typesArray: types
+                        });
+                    }
+                });
+            }
+        });
     }
-    db.usersArray(function(error, results){
-        if( error ){
-            console.log(error);
-        } else{
-            res.render('account', {
-                title: 'My Account',
-                username: req.session.username,
-                users: results
-            });
-        }
-    });
 });
 
+/* GET login page */
 app.get('/login', function(req, res){
     res.render('login', {
-        title: 'Login'
+        title: 'Login - GuessMe!'
     });
 });
 
+/* login user, create the session */
 app.post('/authenticate', function(req, res){
     if( req.body.username === ''
     || req.body.password === '' ){
         console.log('fill all fields!');
-        return;
+        res.redirect('/login');
+    } else{
+        db.login(req.body.username, req.body.password, function(error, results){
+            if( error ){
+                console.log(error);
+                res.redirect('/login');
+            } else if( results ){
+                console.log(results);
+                req.session.user = results;
+                res.redirect('/account');
+            } else{
+                console.log('problem logging in');
+                res.redirect('/login');
+            }
+        });
     }
-    db.login(req.body.username, req.body.password, function(error, results){
-        if( error ){
-            console.log(error);
-        } else if( results ){
-            console.log(results);
-            req.session.isAuthenticated = true;
-            req.session.username = req.body.username;
-            req.session.password = req.body.password;
-            res.redirect('/account');
-        } else{
-            console.log('problem logging in');
-        }
-    });
 });
 
+/* db.save new user */
 app.post('/newAcct', function(req, res){
     if( req.body.firstName === ''
     || req.body.lastName === ''
@@ -112,105 +125,157 @@ app.post('/newAcct', function(req, res){
         if( error ){
             console.log(error);
         } else{
-            req.session.username = req.body.newUsername;
-            req.session.password = req.body.newPassword;
-            req.session.isAuthenticated = true;
-            res.redirect('/account');
+            db.login(user.userName, user.password, function(error, results){
+                if( error ) console.log(error);
+                console.log(results);
+                req.session.user = results;
+                res.redirect('/account');
+            });
         }
     });
 });
 
+/* destroy the session */
 app.post('/logout', function(req, res){
-    db.logout(req.session.username, function(error){
-        if( error ){
-            console.log(error);
-        }
-        req.session.destroy();
-        res.redirect('/');
-    });
+    req.session.destroy();
+    res.redirect('/');
 });
 
+/* GET home page */
 app.get('/index', function(req, res){
     res.render('index', { 
-        title: 'Welcome to GuessMe!' 
+        title: 'Home - GuessMe!' 
     });
 });
 
+/* create new game, if exists, use that one */
 app.post('/new-game', function(req, res){
-    if( !req.session.isAuthenticated ){
+    if( !req.session.user ){
         res.redirect('/login');
     } else if( req.body.opponent === ''){
-        console.log('no opp');//res.end();
-    } else if( req.body.opponent === req.session.username ){
-        console.log('opponent is user');//res.end()
+        res.redirect('/account');
+    } else if( req.body.opponent === req.session.user.userName ){
+        res.redirect('/account');
     } else{ 
         // Double check that the opponent exists!
-        db.containsUser(req.body.opponent, function(error, results){
-            if( error ) console.log('error');//res.end();
+        db.getUser(req.body.opponent, function(error, results){
+            if( error ){
+                console.log('error, invalid opponent');
+                res.redirect('/account');
+            }
             else if( results ){
-                db.createGame(req.session.username, req.body.opponent, 'Movie Characters', 
-                        function(error, results){
-                    if( error ) console.log('error2');
-                    else if( results ){
-                        console.log(results);
-                        req.session.opponent = req.body.opponent;
+                /* first check if this game already exists */
+                db.findGame(req.session.user.userName, req.body.opponent, 'Movie Characters',
+                function(error, results){
+                    if( error ){
+                        console.log(error);
+                    }
+                    if( results ){
+                        if( results.player1.name === req.session.user.userName )
+                            req.session.opponent = results.player2.name;
+                        else req.session.opponent = results.player1.name;
                         req.session.game = results;
                         res.redirect('/game');
+                    } else{
+                        /* create a new game */
+                        db.createGame(req.session.user.userName, req.body.opponent, 'Movie Characters', 
+                        function(error, results){
+                            if( error ) console.log(error);
+                            else{
+                                db.findGame(req.session.user.userName, req.body.opponent, 'Movie Characters',
+                                function(error, results){
+                                    if( error ) console.log(error);
+                                    else{
+                                        if( results.player1.name === req.session.user.userName )
+                                            req.session.opponent = results.player2.name;
+                                        else req.session.opponent = results.player1.name;
+                                        req.session.game = results;
+                                        db.addGameToUser(results, req.session.user.userName, false, 
+                                        function(error, results){
+                                            if( error ) console.log(error);
+                                            else{
+                                                db.addGameToUser(req.session.game, req.session.opponent, true, 
+                                                function(error, results){
+                                                    if( error ) console.log(error);
+                                                    else res.redirect('/game');
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
             } else{
-                console.log('else');// res.end();
+                console.log('opponenet not found!');
+                res.redirect('/account');
             }
         });
     }
 });
 
-app.post('/join-game', function(req, res){
-});
-
+/* GET game page */
 app.get('/game', function(req, res){
-    if ( !req.session.isAuthenticated ){
+    if ( !req.session.user ){
         res.redirect('/login');
     } else{
         res.render('game', { 
-            title: 'New Game',
-            user: req.session.username,
+            title: req.session.game.type+' - GuessMe!',
+            user: req.session.user,
             opponent: req.session.opponent
         });
     }
 });
 
+/* add a message to the game's chat, return the up-to-date */
 app.post('/update-chat', function(req, res){
-    var str = req.session.username;
-    str += ': ';
-    str += req.body.message;
-    console.log(str);
-    db.updateChatById(req.session.gameID, str, 
+    if( !req.session.user ){
+        res.redirect('/login');
+    } else{
+        /* if has message, push to db */
+        if( req.body.message !== undefined ){
+            var str = req.session.user.userName;
+            str += ': ';
+            str += req.body.message;
+            db.updateChatById(req.session.game._id, str,
+            function(error, results){
+                if( error ) console.log(error);
+            });
+        }
+        /* return the up to date chat array */
+        db.findChatById(req.session.game._id, function(error, results){
+            if( error ) callback(error);
+            else{
+                console.log(results);
+                res.send(results);
+            }
+        });
+    }
+});
+
+/* update the game's guesses and board return up to date game */
+app.post('/update-game', function(req, res){
+    if( !req.session.user ){
+        res.redirect('/login');
+        return;
+    }
+    db.updateGame(req.session.game._id, req.session.user.userName, req.board, req.guess, req.isOppTurn, 
     function(error, results){
         if( error ) console.log(error);
         else{
-            res.send(results);
+            db.findGameById(req.session.game._id, function(error, results){
+                if( error ) console.log(error);
+                else{ 
+                    req.session.game = results;
+                    res.send(results);
+                }
+            });
         }
     });
 });
 
-app.get('/get-chat', function(req, res){
-    db.findChatById(req.session.gameID, function(error, results){
-        if( error ) callback(error);
-        else{
-            console.log(results);
-            res.send(results);
-        }
-    });
-});
-
-app.post('/update-game', function(req, res){
-});
-
-app.get('/game-state', function(req, res){
-    // server state!
-});
-
+/* the game boards characters and their name's */
 app.get('/game-characters', function(req, res){
     db.getCharactersByType('Movie Characters', function(error, results){
         if( error ) console.log(error);
@@ -218,9 +283,10 @@ app.get('/game-characters', function(req, res){
     });
 });
 
+/* GET description page */
 app.get('/description', function(req, res){
     res.render('description', {
-        title: 'About GuessMe!'
+        title: 'About - GuessMe!'
     })
 });
 

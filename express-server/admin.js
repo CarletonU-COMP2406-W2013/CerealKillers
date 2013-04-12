@@ -89,7 +89,4 @@ var setupMovieChars = function(){
             console.log(results);
         }
     });
-};
-
-console.log(db);
-setupMovieChars();
+}; setupMovieChars();
