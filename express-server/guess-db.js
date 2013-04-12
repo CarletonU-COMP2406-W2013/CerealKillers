@@ -140,7 +140,9 @@ Database.prototype.updateGameBoard = function(id, name, board, callback){
         else{
             game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
-                else{
+                else if( results === null){
+                    callback('error');
+                } else{
                     if( results.player1.name === name ){
                         results.player1.board = board;    
                     } else{
@@ -201,6 +203,9 @@ Database.prototype.findChatById = function(id, callback){
         else{
             game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
+                else if( results === null ){
+                    callback('error');
+                }
                 else{
                     callback(null, results.chat);
                 }
@@ -229,7 +234,7 @@ Database.prototype.endGameById = function(id, callback){
         else{
             game_collection.remove({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
-                else callback(null, 'success!');
+                else callback(null, 'success, game over!');
             });
         }
     });

@@ -252,8 +252,9 @@ app.post('/update-chat', function(req, res){
         }
         /* return the up to date chat array */
         db.findChatById(req.session.game._id, function(error, results){
-            if( error ) callback(error);
-            else{
+            if( error ){
+                res.send('Game Over');
+            } else{
                 console.log(results);
                 res.send(results);
             }
@@ -272,8 +273,9 @@ app.post('/update-game', function(req, res){
         if( error ) console.log(error);
         else{
             console.log('updated game board!');
-            if( req.body.message ){
-                db.updateGameGuess(req.session.game._id, req.session.user.userName, req.body.message,
+            if( req.body.guess ){
+                console.log(req.body.guess);
+                db.updateGameGuess(req.session.game._id, req.session.user.userName, req.body.guess,
                 function(error, results){
                     if( error ) console.log(error)
                     else{
@@ -288,13 +290,46 @@ app.post('/update-game', function(req, res){
                 });
             }
             db.findGameById(req.session.game._id, function(error, results){
-                if( error ) console.log(error);
-                else{
-                    console.log(results);
+                if( error ){
+                    res.send('Game Over');
+                } else{
+                    console.log(results.player1.isTurn);
                     req.session.game = results;
+                    results.user = req.session.user;
                     res.send(results);
                 }
           });
+        }
+    });
+});
+
+app.post('/final-guess', function(req, res){
+    var guess = req.body.finalGuess.toUpperCase();
+    var winner, sender, opponent, ans;
+    console.log('1');
+    if( req.session.game.player1.name === req.session.user.userName ){
+        ans = req.session.game.player2.charName.toUpperCase();
+        sender = req.session.game.player1.name;
+        opponent = req.session.game.player2.name;
+        console.log('endif');
+    } else{
+        ans = req.session.game.player1.charName.toUpperCase();
+        sender = req.session.game.player2.name;
+        opponent = req.session.game.player1.name;
+        console.log('endelse');
+    }
+    if( ans === guess ){
+        winner = sender;
+        console.log('sender wins');
+    } else{
+        winner = opponent;
+        console.log('opponent wins');
+    }
+    db.endGameById(req.session.game._id, function(error, results){
+        if( error ) console.log(error);
+        else{
+            console.log(results);
+            res.send(winner);
         }
     });
 });
