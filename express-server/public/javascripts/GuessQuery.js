@@ -11,34 +11,32 @@ var yourTurn = true;
 //	-checks if it is the current user's turn and if it is it will post the contents to the page and send it to the server
 function runGuess(e) {
     if (e.keyCode == 13) {
-    	var toAdd = $('input[name=guessItem]').val();
-        $.ajax({
-            type: "POST",
-            url: '/update-game',
-            data: {guess: toAdd, board: toSend, isOppTurn: true},
-            success: function(data){
-                $('#guessToScroll').empty();
-                for( var i=0; i<data.guesses.length; i++){
-                    $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
-                }
-                if( data.player1.name === user.userName ){
-                    yourTurn = data.player1.isTurn;
-                    toSend = data.player1.board;
-                    opp = data.player2.board;
-                    updateOpponentArray(opp);
-                } else{
-                    yourTurn = data.player2.isTurn;
-                    toSend = data.player2.board;
-                    opp = data.player1.board;
-                    updateOpponentArray(opp);
-                }
-            }   
-        });
-		if((yourTurn == true) && (toAdd != "")){
-			$('#guessToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
-			yourTurn = false;
+    	var toAdd = $("input:radio[name='respTF']:checked").val() + ", "+$('input[name=guessItem]').val();
+        if((yourTurn == true) && (toAdd != "") && ($("input:radio[name='respTF']:checked").val() != undefined)){
+            $.ajax({
+                type: "POST",
+                url: '/update-game',
+                data: {guess: toAdd, board: toSend, isOppTurn: true},
+                success: function(data){
+                    $('#guessToScroll').empty();
+                    for( var i=0; i<data.guesses.length; i++){
+                        $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
+                    }
+                    if( data.player1.name === user.userName ){
+                        yourTurn = data.player1.isTurn;
+                        toSend = data.player1.board;
+                        opp = data.player2.board;
+                        updateOpponentArray(opp);
+                    } else{
+                        yourTurn = data.player2.isTurn;
+                        toSend = data.player2.board;
+                        opp = data.player1.board;
+                        updateOpponentArray(opp);
+                    }
+                }   
+            });
 		}
-		$('input[name=guessItem]').val("");
+		//$('input[name=guessItem]').val("");
         return false;
     }
 }
@@ -196,12 +194,32 @@ $(document).ready(function(){
         });
     }, 5000); // 5 seconds
     $('#guessButton').click(function(){
-        var toAdd = $('input[name=guessItem]').val();
-        if((yourTurn == true) && (toAdd != "")){
-            $('#guessToScroll').append('<div class ="item"><b>' + "You: </b>"+ toAdd + '</div>');
-            yourTurn = false;
+        var toAdd = $("input:radio[name='respTF']:checked").val() + ", "+$('input[name=guessItem]').val();
+        if((yourTurn == true) && (toAdd != "") && ($("input:radio[name='respTF']:checked").val() != undefined)){
+            $.ajax({
+                type: "POST",
+                url: '/update-game',
+                data: {guess: toAdd, board: toSend, isOppTurn: true},
+                success: function(data){
+                    $('#guessToScroll').empty();
+                    for( var i=0; i<data.guesses.length; i++){
+                        $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
+                    }
+                    if( data.player1.name === user.userName ){
+                        yourTurn = data.player1.isTurn;
+                        toSend = data.player1.board;
+                        opp = data.player2.board;
+                        updateOpponentArray(opp);
+                    } else{
+                        yourTurn = data.player2.isTurn;
+                        toSend = data.player2.board;
+                        opp = data.player1.board;
+                        updateOpponentArray(opp);
+                    }
+                }   
+            });
         }
-        $('input[name=guessItem]').val() = "";
+        $('input[name=guessItem]').val("");
     });
     //handles the chat div being clicked
     $('#chatButton').click(function(){
