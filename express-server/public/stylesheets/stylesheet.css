@@ -163,4 +163,14 @@ img{
 	padding-top: 0px;
 	padding-bottom: 0px;
 }
-
+#errmsg{
+	background-color:red;
+	width:50em;
+	height:50px;
+	font-family:Verdana;
+	color:black;
+	margin-left:auto;
+	margin-right:auto;
+	border: 2px solid;
+	text-align:center;
+}

@@ -75,6 +75,12 @@ app.get('/account', function(req, res){
     }
 });
 
+app.get('/errlogin', function(req, res){
+    res.render('errlogin', {
+        title: 'Login Failed - GuessMe!'
+    });
+});
+
 /* GET login page */
 app.get('/login', function(req, res){
     res.render('login', {
@@ -87,19 +93,19 @@ app.post('/authenticate', function(req, res){
     if( req.body.username === ''
     || req.body.password === '' ){
         console.log('fill all fields!');
-        res.redirect('/login');
+        res.redirect('/errlogin');
     } else{
         db.login(req.body.username, req.body.password, function(error, results){
             if( error ){
                 console.log(error);
-                res.redirect('/login');
+                res.redirect('/errlogin');
             } else if( results ){
                 console.log(results);
                 req.session.user = results;
                 res.redirect('/account');
             } else{
                 console.log('problem logging in');
-                res.redirect('/login');
+                res.redirect('/errlogin');
             }
         });
     }
@@ -112,7 +118,7 @@ app.post('/newAcct', function(req, res){
     || req.body.newUsername === ''
     || req.body.newPassword === '' ){
         console.log('Fill in all fields!');
-        res.end('error');
+        res.redirect('/errlogin');
         return;
     }
     var user = {
@@ -124,6 +130,7 @@ app.post('/newAcct', function(req, res){
     db.saveUser(user, function(error, results){
         if( error ){
             console.log(error);
+            res.redirect('/errlogin');
         } else{
             db.login(user.userName, user.password, function(error, results){
                 if( error ) console.log(error);
@@ -221,7 +228,7 @@ app.get('/game', function(req, res){
         res.redirect('/login');
     } else{
         res.render('game', { 
-            title: req.session.game.type+' - GuessMe!',
+            title: req.session.game.theme+' - GuessMe!',
             user: req.session.user,
             opponent: req.session.opponent
         });
@@ -260,17 +267,34 @@ app.post('/update-game', function(req, res){
         res.redirect('/login');
         return;
     }
-    db.updateGame(req.session.game._id, req.session.user.userName, req.board, req.guess, req.isOppTurn, 
+    db.updateGameBoard(req.session.game._id, req.session.user.userName, req.body.board, 
     function(error, results){
         if( error ) console.log(error);
         else{
+            console.log('updated game board!');
+            if( req.body.message ){
+                db.updateGameGuess(req.session.game._id, req.session.user.userName, req.body.message,
+                function(error, results){
+                    if( error ) console.log(error)
+                    else{
+                        console.log('updated guesses!');
+                        if( req.body.isOppTurn ){
+                            db.switchTurns(req.session.game._id, function(error, results){
+                                if( error ) console.log(error);
+                                else console.log('switched turns!');
+                            });
+                        }
+                    }
+                });
+            }
             db.findGameById(req.session.game._id, function(error, results){
                 if( error ) console.log(error);
-                else{ 
+                else{
+                    console.log(results);
                     req.session.game = results;
                     res.send(results);
                 }
-            });
+          });
         }
     });
 });
