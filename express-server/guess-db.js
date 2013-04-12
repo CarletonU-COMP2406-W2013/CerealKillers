@@ -4,21 +4,18 @@ var Server = require('mongodb').Server;
 var BSON = require('mongodb').BSON;
 var ObjectID = require('mongodb').ObjectID;
 
-/* keep track of active games */
-var currId = 0;
-
 /**
- * Database object
+ * Create DB
  */
 Database = function(host, port){
     this.db = new Db('guess-mongo', new Server(host, port, {safe:true}, {auto_reconnect:true}));
-        this.db.open(function(){});
+    this.db.open(function(){});
 };
 
 
 
 /**
- * Game functions
+ * 'games' Collection
  */
 Database.prototype.getGames = function(callback){
     this.db.collection('games', function(error, game_collection){
@@ -29,139 +26,132 @@ Database.prototype.getGames = function(callback){
 
 /* form a game between two users */
 Database.prototype.createGame = function(name1, name2, type, callback){
-    /* if a game already exists between these users, return it */
-    var that = this;
-    this.findGame(name1, name2, function(error, results){
-        if( results ) callback(results);
-    });
+    var that = this; // workaround!
+    /* create two game boards as 2D arrays */
+    var b1 = new Array(6);
+    var b2 = new Array(6);
+
+    for( var i=0; i<4; i++ ){
+        b1[i] = new Array(4);
+        b2[i] = new Array(4);
+
+        /* all positions are true; all characters are shown */
+        for( var j=0; j<6; j++ ){
+            b1[i][j] = true;
+            b2[i][j] = true;
+        }
+    }
+    /* choose a random card for each player */
+    var x1 = Math.floor((Math.random()*4));
+    var y1 = Math.floor((Math.random()*6));
+    var x2 = Math.floor((Math.random()*4));
+    var y2 = Math.floor((Math.random()*6));
+    var p1 = '['+x1+', '+y1+']';
+    var p2 = '['+x2+', '+y2+']';
+    /* create the user objects */
+    var user1 = {
+        name:  name1,
+        board: b1,
+        character: p1,
+        isTurn: true
+    };
+    var user2 = {
+        name: name2,
+        board: b2,
+        character: p2,
+        isTurn: false
+    };
     this.getGames(function(error, game_collection){
-        game_collection.findOne({ gameID: 1 }, function(error, results){
-            if( results )callback(1);
-        });
+        game_collection.save({ theme: type, player1: user1, player2: user2,
+        guesses: [], chat: [] });
+    });
+    callback(null, 'success');
+};
+
+Database.prototype.findGame = function(name1, name2, type, callback){
+    this.getGames(function(error, game_collection){
         if( error ) callback(error);
-        else {
-            /* create two game boards as 2D arrays */
-            var b1 = new Array(6);
-            var b2 = new Array(6);
-
-            for( var i=0; i<4; i++ ){
-                b1[i] = new Array(4);
-                b2[i] = new Array(4);
-
-                /* all positions are true; all characters are shown */
-                for( var j=0; j<6; j++ ){
-                    b1[i][j] = true;
-                    b2[i][j] = true;
-                }
-            }
-            /* choose a random card for each player */
-            var x1 = Math.floor((Math.random()*4));
-            var y1 = Math.floor((Math.random()*6));
-            var x2 = Math.floor((Math.random()*4));
-            var y2 = Math.floor((Math.random()*6));
-            var p1 = '['+x1+', '+y1+']';
-            var p2 = '['+x2+', '+y2+']';
-            /* create the user objects */
-            var user1 = {
-                name:  name1,
-                board: b1,
-                character: p1,
-                isTurn: true
-            };
-            var user2 = {
-                name: name2,
-                board: b2,
-                character: p2,
-                isTurn: false
-            };
-            currId++; // increment id
-            game_collection.save({ gameType: type, player1: user1, player2: user2,
-                guesses: [], chat: [] });
-            /* return the name game instance (double check finding it) */
-            that.findGame(user1.name, user2.name, function(error, results){
-                if( error ) callback(error);
-                else{
-                    that.addGameToUser(results._id, user1.name, function(callback){
-                        
+        else{
+            game_collection.findOne({ 'player1.name': name1, 'player2.name': name2, theme: type },
+            function(error, results){
+                if( results === null || error ){
+                    game_collection.findOne({ 'player1.name': name2, 'player2.name': name1, theme: type },
+                    function(error, results){
+                        if( results === null || error ) callback('error finding game');
+                        else{
+                            callback(null, results);
+                        }
                     });
+                } else{
                     callback(null, results);
-                }            
-            });
-        }
-    });
-};
-
-/* find a game instance that contains the two names */
-/* useful to check if game exists */
-Database.prototype.findGame = function(name1, name2, callback){
-    this.getGames(function(error, game_collection){
-        if( error ) callback(error);
-        else{
-            game_collection.findOne({ 'player1.name': name1, 'player2.name': name2 },
-                    function(error, results){
-                if( error || !results ){ 
-                    game_collection.findOne({ 'player1.name': name2, 'player2.name': name1 },
-                            function(error, results){
-                        if( error || !results ) callback(error);
-                        else callback(null, results);
-                    });
                 }
-                else callback(null, results);
             });
         }
     });
 };
 
-Database.prototype.findUsersGame = function(name, callback){
-    this.getGame(function(error, game_cllection){
-        if( error ) callback(error);
-        else{
-            game_collection.findOne({ 'player1.name': name },
-                    function(error, results){
-                if( error ){ 
-                    game_collection.findOne({ 'player2.name': name },
-                            function(error, results){
-                        if( error ) callback(error);
-                        else callback(null, results);
-                    });
-                }
-                else callback(null, results);
-            });
+
+/* find a game by looking in two users*/
+Database.prototype.findGameInUsers = function(name1, name2, type, callback){
+    var arr1, arr2;
+    /* set arr1 = name1's games */
+    this.getUsersGames(name1, function(error, results){
+        if( error ){
+            return callback(error);
         }
+        else arr1 = results.games;
     });
+    /* arr2 = name2's games */
+    this.getUsersGames(name2, function(error, results){
+        if( error ){
+            return callback(error);
+        }
+        else arr2 = results.games;
+    });
+    // if the arrays exist
+    if(!( arr1 == undefined || arr2 == undefined )){
+        for( var i=0; i<arr1.length; i++ ){
+            if( arr1[i].theme === type && arr1[i].opponent === name2 ){
+                for( var j=0; j<arr2.length; j++ ){
+                    if( arr2[j].theme === type && arr2[j].opponent === name1){
+                        // Match found!
+                        return callback(null, arr2[j]); // arr1[i] == arr2[j]
+                    } // fi
+                } // rof
+            } // fi
+        } // rof    
+    } else callback('no game found', null); // no game found
 };
 
+/* update a game's state */
 Database.prototype.updateGame = function(id, name, board, guess, isOppTurn, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
         else{
             // update the guess array
-            game_collection.update({ gameID: id }, { '$push': { 'guesses': guess } });
-            // get the user object matching username
-            var user1, user2;
-            user1 = game_collection.find({ gameID: id }, { player1: 1, _id: 0 });
-            user2 = game_collection.find({ gameID: id }, { player2: 1, _id: 0 });
-            if( !(user1 && user2) ) callback('error, users not found');
-            /* update user's board */
-            else{
-                if( user1.name === name ){
-                    user1.board = board;
-                    if( isOppTurn ){ 
-                        user1.isTurn = false;
-                        user2.isTurn = true;
+            if( guess != null ){
+                game_collection.update({ _id: ObjectID(id) }, { '$push': { 'guesses': guess } });
+            }
+            var isP1;
+            game_collection.find({ _id: ObjectID(id) }, function(error, results){
+                if( isOppTurn ){ 
+                    if( results.player1.name === name ){
+                        player1.isTurn = false;
+                        palyer2.isTurn = true;
+                        isP1 = true;
+                    } else{
+                        player2.isTurn = false;
+                        player1.isTurn = true;
+                        isP1 = false;
                     }
                 }
-                else if( user2.name === name ){
-                    user2.board = board;
-                    if( isOppTurn ){
-                        user1.isTurn = true;
-                        user2.isTurn = false;
-                    }
-                } else (callback('error with users'));
-                game_collection.update({ gameID: id }, { '$set': { player1: user1 } });
-                game_collection.update({ gameID: id }, { '$set': { player2: user2 } });
-                findGameById(id, callback); //all was successful, return this game
+            });
+            if( isP1 ){ 
+                game_collection.update({ _id: ObjectID(id) }, { '$set': { 'player1.board': board } });  
+            } else{ 
+                game_collection.update({ _id: ObjectID(id) }, { '$set': { 'player2.board': board } });
             }
+            callback(null, 'success!');
         }
     });
 };
@@ -171,7 +161,7 @@ Database.prototype.updateChatById = function(id, string, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
         else{
-            game_collection.update({ gameID: id }, { '$push': { 'chat': string } });
+            game_collection.update({ _id: ObjectID(id) }, { '$push': { 'chat': string } });
             callback(null, 'success');
         }
     });
@@ -182,7 +172,7 @@ Database.prototype.findChatById = function(id, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
         else{
-            game_collection.findOne({ gameID: id }, function(error, results){
+            game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
                 else{
                     callback(null, results.chat);
@@ -196,8 +186,8 @@ Database.prototype.findChatById = function(id, callback){
 Database.prototype.findGameById = function(id, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
-        else {
-            game_collection.findOne({ gameID: id }, function(error, result){
+        else{
+            game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
                 else callback(null, results);
             });
@@ -209,13 +199,10 @@ Database.prototype.findGameById = function(id, callback){
 Database.prototype.endGameById = function(id, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
-        else {
-            game_collection.remove({ gameID: id }, function(error){
+        else{
+            game_collection.remove({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
-                else{
-                    currId--;
-                    callback(null);
-                }
+                else callback(null, 'success!');
             });
         }
     });
@@ -224,10 +211,7 @@ Database.prototype.endGameById = function(id, callback){
 
 
 /**
- * User functions
-            addGameToUser(currId, name1, function(error, results){
-                if( error ) callback(error);
-            });
+ * 'users' Collection
  */
 Database.prototype.getUsers = function(callback){
     this.db.collection('users', function(error, user_collection){
@@ -241,7 +225,7 @@ Database.prototype.saveUser = function(user, callback){
         if( error ) callback(error);
         else {
             user_collection.save({ userName: user.userName, fName: user.fName, lName: user.lName,
-                password: user.password, gameIDs: [], gameCred: 0 });
+            password: user.password, games: [], gameCred: 0 });
             callback(null, 'success');
         }
     });
@@ -257,11 +241,11 @@ Database.prototype.removeUserByName = function(name, callback){
                 if( error ) callback(error);
                 else{
                     /* loop array of gameIDs and delete these games */
-                    var arr = user_collection.find({ userName: name }, { gameIDs: 1, _id: 0 });
+                    var arr = user_collection.find({ userName: name }, { games: 1, _id: 0 });
                     for( var i=0; i<arr.size; i++ ){
-                        game_collection.remove({ gameID: arr[i] });
-                    }
-                }
+                        game_collection.remove({ _id: ObjectID(arr[i]) });
+                    } // rof
+                } // esle
             });
             user_collection.remove({ userName: name });
             callback(null, 'success');
@@ -274,28 +258,29 @@ Database.prototype.usersArray = function(callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
-            user_collection.find().toArray(function(error, results){
+            user_collection.find().toArray(function(error, array){
                 if( error ) callback(error);
-                else callback(null, results);
+                else callback(null, array);
             });
         }
     });
 };
 
+/* find user with matching name and password */
 Database.prototype.login = function(name, pass, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
             user_collection.findOne({ userName: name, password: pass }, function(error, results){
                 if( error ) callback(error);
-                //else if( results.userName !== name ) callback('error');
                 else callback(null, results);
             });
         }
     });
 };
 
-Database.prototype.containsUser = function(name, callback){
+/* get a user by name */
+Database.prototype.getUser = function(name, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
@@ -307,34 +292,44 @@ Database.prototype.containsUser = function(name, callback){
     });
 };
 
-Database.prototype.logout = function(name, callback){
+/* add a game to user */
+Database.prototype.addGameToUser = function(Game, name, isNewReq, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
-            callback(null, 'success');
-       }
-    });
-};
-
-Database.prototype.addGameToUser = function(id, name, callback){
-    this.getUsers(function(error, user_collection){
-        if( error ) callback(error);
-        else{
-            user_collection.update({ userName: name }, {'$push': { gameIDs: id } })
-            callback(null, 'success');
+            var opponent;
+            if( Game.player1.name === name ) 
+                opponent = Game.player2.name;
+            else 
+                opponent = Game.player1.name;
+            var game = {
+                id: Game._id,
+                type: Game.theme,
+                opp: opponent,
+                newReq: isNewReq // (bool) this game is a request
+            };
+            if( !opponent ) callback('error no opponent', null);
+            else{
+                user_collection.update({ userName: name }, {'$push': { games: game } })
+                callback(null, 'success');
+            }
         }
     });
 };
 
-/* returns an array of game ids. Can get games using these. */
-Database.prototype.getUsersGameIDs = function(name, callback){
+/* returns a user's active games. Can get games using these. */
+Database.prototype.getUsersGames = function(name, callback){
     this.getUsers(function(error, user_collection){
         if( error ) callback(error);
         else{
-            user_collection.find({ userName: name,  online: 'yes' }, { gameIDs: 1, _id: 0 },
-                    function(error, results){
+            user_collection.find({ userName: name }, function(error, results){
                 if( error ) callback(error);
-                else callback(null, results);
+                else{
+                    results.toArray(function(error, array){
+                        if( error ) callback(error);
+                        else callback(null, array);
+                    });
+                }
             });
         }
     });
@@ -343,8 +338,7 @@ Database.prototype.getUsersGameIDs = function(name, callback){
 
 
 /**
- * Save game types as 2d arrays
- * of image paths with 2d arrays of character names.
+ * 'characters' Collection
  */
 Database.prototype.getCharactersCollection = function(callback){
     this.db.collection('characters', function(error, characters_collection){
@@ -353,6 +347,26 @@ Database.prototype.getCharactersCollection = function(callback){
     });
 };
 
+/* get list of game types */
+Database.prototype.getGameTypes = function(callback){
+    this.setupMovieChars();
+    this.getCharactersCollection(function(error, characters_collection){
+        if( error ) callback(error);
+        else{
+            characters_collection.find(function(error, results){
+                if( error ) callback(error);
+                else{
+                    results.toArray(function(error, array){
+                        if( error ) callback(error);
+                        else callback(null, array);
+                    });
+                }
+            });
+        }
+    });
+};
+
+/* get set of characters to populate game board */
 Database.prototype.getCharactersByType = function(type, callback){
     this.getCharactersCollection(function(error, characters_collection){
         if( error ) callback(error);
@@ -365,12 +379,18 @@ Database.prototype.getCharactersByType = function(type, callback){
     });
 };
 
+/* save a new set of characters */
 Database.prototype.saveCharacterSetByType = function(type, arr1, arr2, callback){
     this.getCharactersCollection(function(error, characters_collection){
         if( error ) callback(error);
-        else{ 
-            characters_collection.save({ type: type, images: arr1, names: arr2 });
-            callback(null, 'success!');
+        else{
+            characters_collection.findOne({ type: type }, function(error, results){
+                if( results !== null || error ) return;
+                else{
+                    characters_collection.save({ type: type, images: arr1, names: arr2 });
+                    callback(null, 'success!');
+                }
+            });
         }
     });
 };
@@ -379,7 +399,7 @@ Database.prototype.saveCharacterSetByType = function(type, arr1, arr2, callback)
  * Sets up an array of image paths
  * for to populate a game of 'Move Characters'
  */
-var setupMovieChars = function(){
+Database.prototype.setupMovieChars = function(){
     /* The array of image paths */
     var imgArr = new Array(4);
     for( var i=0; i<4; i++ ){
@@ -449,7 +469,7 @@ var setupMovieChars = function(){
     nameArr[3][5] = 'Loki';
 
     /* Save the Arrays to db.charactersCollection */
-    db.saveCharacterSetByType('Movie Characters', imgArr, nameArr, function(error, results){
+    this.saveCharacterSetByType('Movie Characters', imgArr, nameArr, function(error, results){
         if( error ){
             console.log(error);
         } else{
