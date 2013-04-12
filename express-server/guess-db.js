@@ -440,7 +440,7 @@ Database.prototype.setupMovieChars = function(){
     imgArr[0][4] = 'images/MovieCharacters/Bond.jpg';
     imgArr[0][5] = 'images/MovieCharacters/Catwoman.jpg';
     /* Row 1 */
-    imgArr[1][0] = 'images/MovieCharacters/Dexter.jpg';
+    imgArr[1][0] = 'images/MovieCharacters/Dirty-Harry.jpg';
     imgArr[1][1] = 'images/MovieCharacters/Fast-and-Furious.jpg';
     imgArr[1][2] = 'images/MovieCharacters/Hulk.jpg';
     imgArr[1][3] = 'images/MovieCharacters/Humantorch.JPG';
@@ -474,10 +474,10 @@ Database.prototype.setupMovieChars = function(){
     nameArr[0][4] = 'James Bond';
     nameArr[0][5] = 'Catwoman';
     /* Row 1 */
-    nameArr[1][0] = 'Dexter';
+    nameArr[1][0] = 'Dirty Harry';
     nameArr[1][1] = 'Dominic Toretto';
     nameArr[1][2] = 'The Hulk';
-    nameArr[1][3] = 'The Human Torch';
+    nameArr[1][3] = 'Human Torch';
     nameArr[1][4] = 'Ironman';
     nameArr[1][5] = 'The Joker';
     /* Row 2 */
@@ -488,15 +488,93 @@ Database.prototype.setupMovieChars = function(){
     nameArr[2][4] = 'Spiderman';
     nameArr[2][5] = 'Superman';
     /* Row 3 */
-    nameArr[3][0] = 'The Terminator';
+    nameArr[3][0] = 'Terminator';
     nameArr[3][1] = 'Thor';
-    nameArr[3][2] = 'Tomb Raider';
+    nameArr[3][2] = 'Lara Croft';
     nameArr[3][3] = 'Darth Vader';
     nameArr[3][4] = 'Wolverine';
     nameArr[3][5] = 'Loki';
 
     /* Save the Arrays to db.charactersCollection */
     this.saveCharacterSetByType('Movie Characters', imgArr, nameArr, function(error, results){
+        if( error ){
+            console.log(error);
+        } else{
+            console.log(results);
+        }
+    });
+};
+Database.prototype.setupSSBChars = function(){
+    /* The array of image paths */
+    var imgArr = new Array(4);
+    for( var i=0; i<4; i++ ){
+        imgArr[i] = new Array(6);
+    }
+    /* Row 0 */
+    imgArr[0][0] = 'images/SuperSmashBros/Bowser.jpg';
+    imgArr[0][1] = 'images/SuperSmashBros/Charizard.png';
+    imgArr[0][2] = 'images/SuperSmashBros/CptFalcon.jpg';
+    imgArr[0][3] = 'images/SuperSmashBros/Diddy.jpeg';
+    imgArr[0][4] = 'images/SuperSmashBros/DK.jpg';
+    imgArr[0][5] = 'images/SuperSmashBros/Falco.jpg';
+    /* Row 1 */
+    imgArr[1][0] = 'images/SuperSmashBros/JigglyPuff.jpg';
+    imgArr[1][1] = 'images/SuperSmashBros/Kirby.png';
+    imgArr[1][2] = 'images/SuperSmashBros/Link.jpeg';
+    imgArr[1][3] = 'images/SuperSmashBros/Lucas.JPG';
+    imgArr[1][4] = 'images/SuperSmashBros/Luigi.jpg';
+    imgArr[1][5] = 'images/SuperSmashBros/Mario.png';
+    /* Row 2 */
+    imgArr[2][0] = 'images/SuperSmashBros/Ness.jpg';
+    imgArr[2][1] = 'images/SuperSmashBros/Olimar.png';
+    imgArr[2][2] = 'images/SuperSmashBros/Peach.jpg';
+    imgArr[2][3] = 'images/SuperSmashBros/Pikachu.jpg';
+    imgArr[2][4] = 'images/SuperSmashBros/ROB.jpg';
+    imgArr[2][5] = 'images/SuperSmashBros/Samus.jpg';
+    /* Row 3 */
+    imgArr[3][0] = 'images/SuperSmashBros/Sheik.jpg';
+    imgArr[3][1] = 'images/SuperSmashBros/StarFox.jpg';
+    imgArr[3][2] = 'images/SuperSmashBros/StarWolf.jpg';
+    imgArr[3][3] = 'images/SuperSmashBros/wario.jpg';
+    imgArr[3][4] = 'images/SuperSmashBros/Yoshi.jpg';
+    imgArr[3][5] = 'images/SuperSmashBros/Zelda.png';
+
+    /* The array of character names corresponding to each image. */
+    var nameArr = new Array(4);
+    for( var i=0; i<4; i++ ){
+        nameArr[i] = new Array(6);
+    }
+    /* Row 0 */
+    nameArr[0][0] = 'Bowser';
+    nameArr[0][1] = 'Charizard';
+    nameArr[0][2] = 'CptFalcon';
+    nameArr[0][3] = 'Diddy';
+    nameArr[0][4] = 'DK';
+    nameArr[0][5] = 'Falco';
+    /* Row 1 */
+    nameArr[1][0] = 'JigglyPuff';
+    nameArr[1][1] = 'Kirby';
+    nameArr[1][2] = 'Link';
+    nameArr[1][3] = 'Lucas';
+    nameArr[1][4] = 'Luigi';
+    nameArr[1][5] = 'Mario';
+    /* Row 2 */
+    nameArr[2][0] = 'Ness';
+    nameArr[2][1] = 'Olimar';
+    nameArr[2][2] = 'Peach';
+    nameArr[2][3] = 'Pikachu';
+    nameArr[2][4] = 'ROB';
+    nameArr[2][5] = 'Samus';
+    /* Row 3 */
+    nameArr[3][0] = 'Sheik';
+    nameArr[3][1] = 'StarFox';
+    nameArr[3][2] = 'StarWolf';
+    nameArr[3][3] = 'Wario';
+    nameArr[3][4] = 'Yoshi';
+    nameArr[3][5] = 'Zelda';
+
+    /* Save the Arrays to db.charactersCollection */
+    this.saveCharacterSetByType('Super Smash Bros', imgArr, nameArr, function(error, results){
         if( error ){
             console.log(error);
         } else{

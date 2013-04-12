@@ -75,6 +75,12 @@ app.get('/account', function(req, res){
     }
 });
 
+app.get('/errlogin', function(req, res){
+    res.render('errlogin', {
+        title: 'Login Failed - GuessMe!'
+    });
+});
+
 /* GET login page */
 app.get('/login', function(req, res){
     res.render('login', {
@@ -87,19 +93,19 @@ app.post('/authenticate', function(req, res){
     if( req.body.username === ''
     || req.body.password === '' ){
         console.log('fill all fields!');
-        res.redirect('/login');
+        res.redirect('/errlogin');
     } else{
         db.login(req.body.username, req.body.password, function(error, results){
             if( error ){
                 console.log(error);
-                res.redirect('/login');
+                res.redirect('/errlogin');
             } else if( results ){
                 console.log(results);
                 req.session.user = results;
                 res.redirect('/account');
             } else{
                 console.log('problem logging in');
-                res.redirect('/login');
+                res.redirect('/errlogin');
             }
         });
     }
@@ -112,7 +118,7 @@ app.post('/newAcct', function(req, res){
     || req.body.newUsername === ''
     || req.body.newPassword === '' ){
         console.log('Fill in all fields!');
-        res.end('error');
+        res.redirect('/errlogin');
         return;
     }
     var user = {
@@ -124,6 +130,7 @@ app.post('/newAcct', function(req, res){
     db.saveUser(user, function(error, results){
         if( error ){
             console.log(error);
+            res.redirect('/errlogin');
         } else{
             db.login(user.userName, user.password, function(error, results){
                 if( error ) console.log(error);
