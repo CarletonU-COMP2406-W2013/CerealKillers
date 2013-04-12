@@ -115,11 +115,11 @@ var startOpponentArray = function(opp){
 var updateOpponentArray = function(opp){
     for(var i=0;i<4;i++){
         for(var j=0;j<6;j++){
-                if(opp[i][j] == false)
-                    $('#o'+i+''+j).css('background-color','white');
-                else{
-                    $('#o'+i+''+j).css('background-color','black');
-                }
+            if(opp[i][j] == false)
+                $('#o'+i+''+j).css('background-color','white');
+            else{
+                $('#o'+i+''+j).css('background-color','black');
+            }
         };
     };
 };

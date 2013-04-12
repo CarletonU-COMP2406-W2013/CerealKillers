@@ -221,7 +221,7 @@ app.get('/game', function(req, res){
         res.redirect('/login');
     } else{
         res.render('game', { 
-            title: req.session.game.type+' - GuessMe!',
+            title: req.session.game.theme+' - GuessMe!',
             user: req.session.user,
             opponent: req.session.opponent
         });
