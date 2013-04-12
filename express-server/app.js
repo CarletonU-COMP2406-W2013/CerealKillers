@@ -260,17 +260,34 @@ app.post('/update-game', function(req, res){
         res.redirect('/login');
         return;
     }
-    db.updateGame(req.session.game._id, req.session.user.userName, req.board, req.guess, req.isOppTurn, 
+    db.updateGameBoard(req.session.game._id, req.session.user.userName, req.body.board, 
     function(error, results){
         if( error ) console.log(error);
         else{
+            console.log('updated game board!');
+            if( req.body.message ){
+                db.updateGameGuess(req.session.game._id, req.session.user.userName, req.body.message,
+                function(error, results){
+                    if( error ) console.log(error)
+                    else{
+                        console.log('updated guesses!');
+                        if( req.body.isOppTurn ){
+                            db.switchTurns(req.session.game._id, function(error, results){
+                                if( error ) console.log(error);
+                                else console.log('switched turns!');
+                            });
+                        }
+                    }
+                });
+            }
             db.findGameById(req.session.game._id, function(error, results){
                 if( error ) console.log(error);
-                else{ 
+                else{
+                    console.log(results);
                     req.session.game = results;
                     res.send(results);
                 }
-            });
+          });
         }
     });
 });

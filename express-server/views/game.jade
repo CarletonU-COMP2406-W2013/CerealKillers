@@ -13,7 +13,7 @@ html
         h1 Welcome to Guess Who?!?
       <br/>
       center
-        p #{user} -vs- #{opponent}
+        p #{user.userName} -vs- #{opponent}
       #guessWindow
         #guessToScroll.list
       #chatWindow
@@ -29,6 +29,7 @@ html
               br
               input(type='radio', name='respTF', value='No', id='nrb')
               | No
+              br
               input#guessInput(type='text', name='guessItem', onkeypress='return runGuess(event)')
             #guessButton Guess!
           td#centerCell
