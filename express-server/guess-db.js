@@ -46,26 +46,36 @@ Database.prototype.createGame = function(name1, name2, type, callback){
     var y1 = Math.floor((Math.random()*6));
     var x2 = Math.floor((Math.random()*4));
     var y2 = Math.floor((Math.random()*6));
-    var p1 = '['+x1+', '+y1+']';
-    var p2 = '['+x2+', '+y2+']';
-    /* create the user objects */
-    var user1 = {
-        name:  name1,
-        board: b1,
-        character: p1,
-        isTurn: true
-    };
-    var user2 = {
-        name: name2,
-        board: b2,
-        character: p2,
-        isTurn: false
-    };
-    this.getGames(function(error, game_collection){
-        game_collection.save({ theme: type, player1: user1, player2: user2,
-        guesses: [], chat: [] });
+    var i1, i2, n1, n2;
+    this.getCharactersByType(type, function(error, results){
+        if( error ) callback(error);
+        else{ 
+            i1 = results.images[x1][y1];
+            n1 = results.names[x1][y1];
+            i2 = results.images[x2][y2];
+            n2 = results.names[x2][y2];
+            /* create the user objects */
+            var user1 = {
+                name:  name1,
+                board: b1,
+                charImg: i1,
+                charName: n1,
+                isTurn: true
+            };
+            var user2 = {
+                name: name2,
+                board: b2,
+                charImg: i2,
+                charName: n2,
+                isTurn: false
+            };
+            that.getGames(function(error, game_collection){
+                game_collection.save({ theme: type, player1: user1, player2: user2,
+                guesses: [], chat: [] });
+                callback(null, 'success');
+            });
+        }
     });
-    callback(null, 'success');
 };
 
 Database.prototype.findGame = function(name1, name2, type, callback){
@@ -124,34 +134,51 @@ Database.prototype.findGameInUsers = function(name1, name2, type, callback){
 };
 
 /* update a game's state */
-Database.prototype.updateGame = function(id, name, board, guess, isOppTurn, callback){
+Database.prototype.updateGameBoard = function(id, name, board, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
         else{
-            // update the guess array
-            if( guess != null ){
-                game_collection.update({ _id: ObjectID(id) }, { '$push': { 'guesses': guess } });
-            }
-            var isP1;
-            game_collection.find({ _id: ObjectID(id) }, function(error, results){
-                if( isOppTurn ){ 
+            game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
+                if( error ) callback(error);
+                else{
                     if( results.player1.name === name ){
-                        player1.isTurn = false;
-                        palyer2.isTurn = true;
-                        isP1 = true;
+                        results.player1.board = board;    
                     } else{
-                        player2.isTurn = false;
-                        player1.isTurn = true;
-                        isP1 = false;
+                        results.player2.board = board;
                     }
+                    game_collection.update({ _id: ObjectID(id) }, { '$set': 
+                    { player1: results.player1, player2: results.player2 } });
+                    callback(null, 'success!');
                 }
             });
-            if( isP1 ){ 
-                game_collection.update({ _id: ObjectID(id) }, { '$set': { 'player1.board': board } });  
-            } else{ 
-                game_collection.update({ _id: ObjectID(id) }, { '$set': { 'player2.board': board } });
-            }
+        }
+    });
+};
+
+Database.prototype.updateGameGuess = function(id, name, guess, callback){
+    this.getGames(function(error, game_collection){
+        if( error ) callback(error);
+        else{
+            game_collection.update({ _id: ObjectID(id) }, { '$push': { 'guesses': guess } });
             callback(null, 'success!');
+        }
+    });
+};
+
+Database.prototype.switchTurns = function(id, callback){
+    this.getGames(function(error, game_collection){
+        if( error ) callback(error);
+        else{
+            game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
+                if( error ) callback(error);
+                else{
+                    results.player1.isTurn = !results.player1.isTurn;
+                    results.player2.isTurn = !results.player2.isTurn;
+                    game_collection.update({ _id: ObjectID(id) }, 
+                    { '$set': { player1: results.player1, player2: results.player2 } });
+                    callback(null, 'success!');
+                }
+            });
         }
     });
 };
