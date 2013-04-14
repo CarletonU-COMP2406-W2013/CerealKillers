@@ -1,6 +1,9 @@
-extends layout
-
-block content
+html
+  head
+    title #{title}
+    link(rel='stylesheet', href='stylesheets/stylesheet.css')
+    script(src='/libs/jquery/jquery.min.js')
+    script(type='text/javascript', src='javascripts/AcctQuery.js')
     #head
         h1 #{user.userName}
 
@@ -9,7 +12,7 @@ block content
     -     for( var i=0; i<input.length; i++ ){
     -         if( input[i].userName !== exclude ){
     -             str += input[i].userName;
-    -             if( i+1 !== input.length ){
+    -             if( i+2 !== input.length ){
     -                 str += ', ';
     -             }
     -         }
@@ -44,13 +47,12 @@ block content
         center
             //p New Requests are denoted by an '*'
         p #{populateGames(user.games)}
-    
+    p Game Cred: #{user.gameCred}
     form(action="/logout", method="post")
         button(type="submit") Logout 
     
     center
         form(action="/new-game", method="post")
-            select
-                option(value="Movie Characters") Movie Characters
+            select#options(name="options")
             input(type="text", placeholder="Opponent", name="opponent") 
             button(type="submit") Game!

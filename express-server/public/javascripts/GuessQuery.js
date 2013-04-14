@@ -113,9 +113,9 @@ var startOpponentArray = function(opp){
         for(var j=0;j<6;j++){
             opp[i][j] = false;
             $('#orow'+i).append('<td id=o'+i+''+j+'><div id=oElement></div></td>');
-        };
+        }
         $('#oTable').append('</tr>');
-    };
+    }
     $('#opponent').append('</table>');
 };
 var updateOpponentArray = function(opp){
@@ -126,8 +126,8 @@ var updateOpponentArray = function(opp){
             else{
                 $('#o'+i+''+j).css('background-color','black');
             }
-        };
-    };
+        }
+    }
 };
     /*****************************************
      * 		       DOC IS READY              *
@@ -174,9 +174,16 @@ $(document).ready(function(){
     //Handles the guess div being clicked
     window.setInterval(function() {
         $.post('/update-chat', function(data){
+           if( data.redirect ){
+               window.location.href = data.redirect;
+           }
            if( data === 'Game Over' ){
                 alert('Game Over: opponent wins');
-                $.get('/account', function(data){});
+                $.get('/account', function(data){
+                    if( data.redirect ){
+                        window.location.href = data.redirect;
+                    }
+                });
             } else{
                 $('#chatToScroll').empty();
                 for( var i=0; i<data.length; i++ ){
@@ -191,6 +198,9 @@ $(document).ready(function(){
             url: '/update-game',
             data: {guess: null, board: toSend, isOppTurn: false},
             success: function(data){
+               if( data.redirect ){
+                    window.location.href = data.redirect;
+                }
                 if( data === 'Game Over' ){
                     alert('Game Over: opponent wins');
                     $.get('/account', function(data){});
@@ -210,10 +220,6 @@ $(document).ready(function(){
                     opp = data.player1.board;
                     updateOpponentArray(opp);
                     }
-                    alert(yourTurn);
-                    if( yourTurn ){
-                        alert('Your turn!');
-                    }
                 }
             }
         });
@@ -226,6 +232,9 @@ $(document).ready(function(){
                 url: '/update-game',
                 data: {guess: toAdd, board: toSend, isOppTurn: true},
                 success: function(data){
+                    if( data.redirect ){
+                        window.location.href = data.redirect;
+                    }
                     $('#guessToScroll').empty();
                     for( var i=0; i<data.guesses.length; i++){
                         $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
@@ -269,7 +278,7 @@ $(document).ready(function(){
         $('input[name=chatItem]').val("");
     });
     //when the user clicks on a picture it will fade out or in and assign the correct value to that position in the array
-    $(document).on("click", "td",function(){
+    $('#board').on("click", "td",function(){
         var check = $(this).attr('class');
         if(check == "boardElement"){
             var counter = $(this).attr('id');
@@ -278,13 +287,11 @@ $(document).ready(function(){
             if(toSend[x][y] == false){
                 $(this).fadeTo("fast", 0.3);
                 toSend[x][y] = true;
-                alert(toSend[x][y]);
                 //opp[x][y] = true;
             }
             else{
                 $(this).fadeTo("fast", 1.0);
-                toSend[x][y] = false;
-                alert(toSend[x][y]);
+                toSend[x][y] = false;                
                 //opp[x][y] = false;
             }
             //updateOpponentArray(opp);

@@ -55,10 +55,10 @@ app.get('/account', function(req, res){
     if( !req.session.user ){
         res.redirect('/login');
     } else{
-        db.getGameTypes(function(error, types){
-            if( error ) console.log(error);
+        db.getUser(req.session.user.userName, function(error, results){
+            if( error ) callback(error);
             else{
-                console.log(types);
+                req.session.user = results;
                 db.usersArray(function(error, results){
                     if( error ) console.log(error);
                     else{
@@ -66,13 +66,22 @@ app.get('/account', function(req, res){
                             title: 'Account - GuessMe!',
                             user: req.session.user,
                             usersArray: results,
-                            typesArray: types
                         });
                     }
                 });
             }
         });
     }
+});
+
+app.get('/game-types', function(req, res){
+    db.getGameTypes(function(error, types){
+        if( error ) console.log(error);
+        else{
+            console.log(types);
+            res.send(types);
+        }
+    });
 });
 
 app.get('/errlogin', function(req, res){
@@ -171,31 +180,36 @@ app.post('/new-game', function(req, res){
                 res.redirect('/account');
             }
             else if( results ){
+                console.log(req.body.options);
                 /* first check if this game already exists */
-                db.findGame(req.session.user.userName, req.body.opponent, 'Movie Characters',
+                db.findGame(req.session.user.userName, req.body.opponent, req.body.options,
                 function(error, results){
                     if( error ){
                         console.log(error);
                     }
                     if( results ){
-                        if( results.player1.name === req.session.user.userName )
+                        if( results.player1.name === req.session.user.userName ){
                             req.session.opponent = results.player2.name;
-                        else req.session.opponent = results.player1.name;
+                        } else{
+                            req.session.opponent = results.player1.name;
+                        }
                         req.session.game = results;
                         res.redirect('/game');
                     } else{
                         /* create a new game */
-                        db.createGame(req.session.user.userName, req.body.opponent, 'Movie Characters', 
+                        db.createGame(req.session.user.userName, req.body.opponent, req.body.options, 
                         function(error, results){
                             if( error ) console.log(error);
                             else{
-                                db.findGame(req.session.user.userName, req.body.opponent, 'Movie Characters',
+                                db.findGame(req.session.user.userName, req.body.opponent, req.body.options,
                                 function(error, results){
                                     if( error ) console.log(error);
                                     else{
-                                        if( results.player1.name === req.session.user.userName )
+                                        if( results.player1.name === req.session.user.userName ){
                                             req.session.opponent = results.player2.name;
-                                        else req.session.opponent = results.player1.name;
+                                        } else{ 
+                                            req.session.opponent = results.player1.name;
+                                        }   
                                         req.session.game = results;
                                         db.addGameToUser(results, req.session.user.userName, false, 
                                         function(error, results){
@@ -205,21 +219,21 @@ app.post('/new-game', function(req, res){
                                                 function(error, results){
                                                     if( error ) console.log(error);
                                                     else res.redirect('/game');
-                                                });
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
+                                                }); // addGameToUser
+                                            } // esle
+                                        }); // addGameToUser
+                                    } // esle
+                                }); // findGame
+                            } // esle
+                        }); // createGame
+                    } // esle
+                }); // findGame
             } else{
                 console.log('opponenet not found!');
                 res.redirect('/account');
-            }
-        });
-    }
+            } // esle
+        }); // findUser
+    } // esle
 });
 
 /* GET game page */
@@ -254,8 +268,8 @@ app.post('/update-chat', function(req, res){
         db.findChatById(req.session.game._id, function(error, results){
             if( error ){
                 res.send('Game Over');
-            } else{
-                console.log(results);
+                res.redirect('/account');
+            } else {
                 res.send(results);
             }
         });
@@ -292,11 +306,13 @@ app.post('/update-game', function(req, res){
             db.findGameById(req.session.game._id, function(error, results){
                 if( error ){
                     res.send('Game Over');
-                } else{
-                    console.log(results.player1.isTurn);
+                } else if( results ){
                     req.session.game = results;
                     results.user = req.session.user;
                     res.send(results);
+                } else{
+                    console.log('error, game not found');
+                    res.redirect('/account');
                 }
           });
         }
@@ -306,17 +322,14 @@ app.post('/update-game', function(req, res){
 app.post('/final-guess', function(req, res){
     var guess = req.body.finalGuess.toUpperCase();
     var winner, sender, opponent, ans;
-    console.log('1');
     if( req.session.game.player1.name === req.session.user.userName ){
         ans = req.session.game.player2.charName.toUpperCase();
         sender = req.session.game.player1.name;
         opponent = req.session.game.player2.name;
-        console.log('endif');
     } else{
         ans = req.session.game.player1.charName.toUpperCase();
         sender = req.session.game.player2.name;
         opponent = req.session.game.player1.name;
-        console.log('endelse');
     }
     if( ans === guess ){
         winner = sender;
@@ -325,18 +338,23 @@ app.post('/final-guess', function(req, res){
         winner = opponent;
         console.log('opponent wins');
     }
-    db.endGameById(req.session.game._id, function(error, results){
+    db.incrementUsersCred(winner, function(error, results){
         if( error ) console.log(error);
-        else{
-            console.log(results);
-            res.send(winner);
+        else{            
+            db.endGameById(req.session.game, function(error, results){
+                if( error ) console.log(error);
+                else{
+                    console.log(results);
+                    res.send(winner);
+                }
+            });
         }
     });
 });
 
 /* the game boards characters and their name's */
 app.get('/game-characters', function(req, res){
-    db.getCharactersByType('Movie Characters', function(error, results){
+    db.getCharactersByType(req.session.game.theme, function(error, results){
         if( error ) console.log(error);
         else res.send(results);
     });
