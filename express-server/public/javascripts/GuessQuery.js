@@ -127,10 +127,10 @@ var startOpponentArray = function(opp){
 var updateOpponentArray = function(opp){
     for(var i=0;i<4;i++){
         for(var j=0;j<6;j++){
-            if(opp[i][j] == false)
-                $('#o'+i+''+j).css('background-color','black');
-            else{
+            if(opp[i][j] === 'false'){
                 $('#o'+i+''+j).css('background-color','white');
+            } else{
+                $('#o'+i+''+j).css('background-color','black');
             }
         }
     }
@@ -161,16 +161,20 @@ $(document).ready(function(){
                 //Sets up the card that the user will be answering questions about
                 $('#yourCard').append('<img src ='+data.player1.charImg+'><br>'+data.player1.charName);
                 yourTurn = data.player1.isTurn;
+                /*
                 toSend = data.player1.board;
                 opp = data.player2.board;
-                updateOpponentArray(opp);
+                */
+                updateOpponentArray(data.player2.board);
             } else{
                 //Sets up the card that the user will be answering questions about
                 $('#yourCard').append('<img src ='+data.player2.charImg+'><br>'+data.player2.charName);
                 yourTurn = data.player2.isTurn;
+                /*
                 toSend = data.player2.board;
                 opp = data.player1.board;
-                updateOpponentArray(opp);
+                */
+                updateOpponentArray(data.player1.board);
             }
         }
     });
@@ -217,14 +221,18 @@ $(document).ready(function(){
                 }
                 if( data.player1.name === thisUser.userName ){
                     yourTurn = data.player1.isTurn;
+                    /*
                     toSend = data.player1.board;
                     opp = data.player2.board;
-                    updateOpponentArray(opp);
+                    */
+                    updateOpponentArray(data.player2.board);
                 } else{
                     yourTurn = data.player2.isTurn;
+                    /*
                     toSend = data.player2.board;
                     opp = data.player1.board;
-                    updateOpponentArray(opp);
+                    */
+                    updateOpponentArray(data.player1.board);
                     }
                 }
             }
@@ -247,14 +255,14 @@ $(document).ready(function(){
                     }
                     if( data.player1.name === thisUser.userName ){
                         yourTurn = data.player1.isTurn;
-                        toSend = data.player1.board;
-                        opp = data.player2.board;
-                        updateOpponentArray(opp);
+                        // toSend = data.player1.board;
+                        // opp = data.player2.board;
+                        updateOpponentArray(data.player2.board);
                     } else{
                         yourTurn = data.player2.isTurn;
-                        toSend = data.player2.board;
-                        opp = data.player1.board;
-                        updateOpponentArray(opp);
+                        // toSend = data.player2.board;
+                        // opp = data.player1.board;
+                        updateOpponentArray(data.player1.board);
                     }
                     yourTurn = false;
                 }   
