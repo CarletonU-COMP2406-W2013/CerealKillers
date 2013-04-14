@@ -31,7 +31,6 @@ app.configure(function(){
         secret: 'dontguessme!'
     }));
     app.use(app.router);
-    app.use(require('stylus').middleware(__dirname + '/public'));
     app.use(express.static(path.join(__dirname, 'public')));
 });
 
@@ -50,6 +49,19 @@ app.get('/', function(req, res, next){
     }
 });
 
+app.get('/notify-cred', function(req, res){
+    if( !req.session.user ) return;
+    else{
+        if( req.session.notifyCredIncrease ){
+            res.send('increase');
+        } else if( req.session.notifyCredDecrease ){
+            res.send('decrease');    
+        } else{
+            res.send('none');
+        }
+    }
+});
+
 /* GET account page */
 app.get('/account', function(req, res){
     if( !req.session.user ){
@@ -58,6 +70,11 @@ app.get('/account', function(req, res){
         db.getUser(req.session.user.userName, function(error, results){
             if( error ) callback(error);
             else{
+                if( req.session.user.gameCred < results.gameCred ){
+                    req.session.notifyCredIncrease = true;
+                } else if( req.session.user.gameCred > results.gameCred ){
+                    req.session.notifyCredDecrease = true;
+                }
                 req.session.user = results;
                 db.usersArray(function(error, results){
                     if( error ) console.log(error);
@@ -256,8 +273,8 @@ app.post('/update-chat', function(req, res){
     } else{
         /* if has message, push to db */
         if( req.body.message !== undefined ){
-            var str = req.session.user.userName;
-            str += ': ';
+            var str ='<b>'+req.session.user.userName;
+            str += ':</b> ';
             str += req.body.message;
             db.updateChatById(req.session.game._id, str,
             function(error, results){
@@ -268,7 +285,6 @@ app.post('/update-chat', function(req, res){
         db.findChatById(req.session.game._id, function(error, results){
             if( error ){
                 res.send('Game Over');
-                res.redirect('/account');
             } else {
                 res.send(results);
             }
@@ -287,7 +303,7 @@ app.post('/update-game', function(req, res){
         if( error ) console.log(error);
         else{
             if( req.body.guess ){
-                var str = req.session.user.userName+': '+req.body.guess;
+                var str = '<b>'+req.session.user.userName+':</b> '+req.body.guess;
                 db.updateGameGuess(req.session.game._id, req.session.user.userName, str,
                 function(error, results){
                     if( error ) console.log(error)
@@ -319,7 +335,7 @@ app.post('/update-game', function(req, res){
 
 app.post('/final-guess', function(req, res){
     var guess = req.body.finalGuess.toUpperCase();
-    var winner, sender, opponent, ans;
+    var winner, loser, sender, opponent, ans;
     if( req.session.game.player1.name === req.session.user.userName ){
         ans = req.session.game.player2.charName.toUpperCase();
         sender = req.session.game.player1.name;
@@ -331,19 +347,26 @@ app.post('/final-guess', function(req, res){
     }
     if( ans === guess ){
         winner = sender;
+        loser = opponent;
         console.log('sender wins');
     } else{
         winner = opponent;
+        loser = sender;
         console.log('opponent wins');
     }
     db.incrementUsersCred(winner, function(error, results){
         if( error ) console.log(error);
-        else{            
-            db.endGameById(req.session.game, function(error, results){
+        else{
+            db.decrementUsersCred(loser, function(error, results){
                 if( error ) console.log(error);
                 else{
-                    console.log(results);
-                    res.send(winner);
+                    db.endGameById(req.session.game, function(error, results){
+                        if( error ) console.log(error);
+                        else{
+                            console.log(results);
+                            res.send(winner);
+                        }
+                    });
                 }
             });
         }
