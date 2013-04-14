@@ -184,9 +184,6 @@ $(document).ready(function(){
     //Handles the guess div being clicked
     window.setInterval(function() {
         $.post('/update-chat', function(data){
-           if( data.redirect ){
-               window.location.href = data.redirect;
-           }
            if( data === 'Game Over' ){
                 alert('Game Over: opponent wins');
                 $.get('/account', function(data){
@@ -208,9 +205,6 @@ $(document).ready(function(){
             url: '/update-game',
             data: {guess: null, board: toSend, isOppTurn: false},
             success: function(data){
-               if( data.redirect ){
-                    window.location.href = data.redirect;
-                }
                 if( data === 'Game Over' ){
                     alert('Game Over: opponent wins');
                     $.get('/account', function(data){});
@@ -221,17 +215,9 @@ $(document).ready(function(){
                 }
                 if( data.player1.name === thisUser.userName ){
                     yourTurn = data.player1.isTurn;
-                    /*
-                    toSend = data.player1.board;
-                    opp = data.player2.board;
-                    */
                     updateOpponentArray(data.player2.board);
                 } else{
                     yourTurn = data.player2.isTurn;
-                    /*
-                    toSend = data.player2.board;
-                    opp = data.player1.board;
-                    */
                     updateOpponentArray(data.player1.board);
                     }
                 }

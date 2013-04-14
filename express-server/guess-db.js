@@ -152,7 +152,7 @@ Database.prototype.findGameInUsers = function(name1, name2, type, callback){
 Database.prototype.updateGameBoard = function(id, name, board, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
-        else{
+        else if( board !== null ){
             game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
                 else if( results === null){
@@ -168,6 +168,8 @@ Database.prototype.updateGameBoard = function(id, name, board, callback){
                     callback(null, 'success!');
                 }
             });
+        } else{
+            callback(null, 'no board provided');
         }
     });
 };
@@ -421,6 +423,22 @@ Database.prototype.incrementUsersCred = function(name, callback){
     });
 };
 
+Database.prototype.decrementUsersCred = function(name, callback){
+    this.getUsers(function(error, user_collection){
+        if( error ) callback(error);
+        else{
+            user_collection.findOne({ userName: name }, function(error, results){
+                if( error ) callback(error);
+                else{
+                    results.gameCred -= 20;
+                    user_collection.update({ userName: name }, { '$set': { gameCred: results.gameCred } });
+                    callback(null, 'success!');
+                }
+            });
+        }
+    });
+};
+
 /* returns a user's active games. Can get games using these. */
 Database.prototype.getUsersGames = function(name, callback){
     this.getUsers(function(error, user_collection){
@@ -455,6 +473,7 @@ Database.prototype.getCharactersCollection = function(callback){
 Database.prototype.getGameTypes = function(callback){
     this.setupMovieChars();
     this.setupSSBChars();
+    this.setupHistoricChars();
     this.getCharactersCollection(function(error, characters_collection){
         if( error ) callback(error);
         else{
@@ -653,6 +672,84 @@ Database.prototype.setupSSBChars = function(){
 
     /* Save the Arrays to db.charactersCollection */
     this.saveCharacterSetByType('Super Smash Bros', imgArr, nameArr, function(error, results){
+        if( error ){
+            console.log(error);
+        } else{
+            console.log(results);
+        }
+    });
+};
+Database.prototype.setupHistoricChars = function(){
+    /* The array of image paths */
+    var imgArr = new Array(4);
+    for( var i=0; i<4; i++ ){
+        imgArr[i] = new Array(6);
+    }
+    /* Row 0 */
+    imgArr[0][0] = 'images/HistoricFigures/DjangoReinhardt.jpg';
+    imgArr[0][1] = 'images/HistoricFigures/Einstein.jpeg';
+    imgArr[0][2] = 'images/HistoricFigures/EleanorRoosevelt.jpg';
+    imgArr[0][3] = 'images/HistoricFigures/Galileo.jpg';
+    imgArr[0][4] = 'images/HistoricFigures/Gandhi.jpg';
+    imgArr[0][5] = 'images/HistoricFigures/GeorgeWashington.jpg';
+    /* Row 1 */
+    imgArr[1][0] = 'images/HistoricFigures/JohnAMac.jpeg';
+    imgArr[1][1] = 'images/HistoricFigures/JuliusCaesar.jpg';
+    imgArr[1][2] = 'images/HistoricFigures/Lincoln.jpeg';
+    imgArr[1][3] = 'images/HistoricFigures/MartinLKJR.jpg';
+    imgArr[1][4] = 'images/HistoricFigures/MotherTeresa.jpg';
+    imgArr[1][5] = 'images/HistoricFigures/Mozart.jpg';
+    /* Row 2 */
+    imgArr[2][0] = 'images/HistoricFigures/Newton.jpg';
+    imgArr[2][1] = 'images/HistoricFigures/Shakespeare.jpg';
+    imgArr[2][2] = 'images/HistoricFigures/Socrates.jpg';
+    imgArr[2][3] = 'images/HistoricFigures/Stalin.jpeg';
+    imgArr[2][4] = 'images/HistoricFigures/ThomasEdison.jpg';
+    imgArr[2][5] = 'images/HistoricFigures/ThomasJefferson.jpg';
+    /* Row 3 */
+    imgArr[3][0] = 'images/HistoricFigures/WinstonChurchill.jpg';
+    imgArr[3][1] = 'images/HistoricFigures/joanofarc.gif';
+    imgArr[3][2] = 'images/HistoricFigures/king-tut.jpg';
+    imgArr[3][3] = 'images/HistoricFigures/leonardkleinrock.jpeg';
+    imgArr[3][4] = 'images/HistoricFigures/linustorvalds.jpg';
+    imgArr[3][5] = 'images/HistoricFigures/plato.jpg';
+
+    /* The array of character names corresponding to each image. */
+    var nameArr = new Array(4);
+    for( var i=0; i<4; i++ ){
+        nameArr[i] = new Array(6);
+    }
+    /* Row 0 */
+    nameArr[0][0] = 'Django Reinhardt';
+    nameArr[0][1] = 'Albert Einstein';
+    nameArr[0][2] = 'Eleanor Roosevelt';
+    nameArr[0][3] = 'Galileo';
+    nameArr[0][4] = 'Gandhi';
+    nameArr[0][5] = 'George Washington';
+    /* Row 1 */
+    nameArr[1][0] = 'John A. Macdonald';
+    nameArr[1][1] = 'Julius Caesar';
+    nameArr[1][2] = 'Abraham Lincoln';
+    nameArr[1][3] = 'Martin Luther King Jr.';
+    nameArr[1][4] = 'Mother Teresa';
+    nameArr[1][5] = 'Mozart';
+    /* Row 2 */
+    nameArr[2][0] = 'Isaac Newton';
+    nameArr[2][1] = 'Shakespeare';
+    nameArr[2][2] = 'Socrates';
+    nameArr[2][3] = 'Joseph Stalin';
+    nameArr[2][4] = 'Thomas Edison';
+    nameArr[2][5] = 'Thomas Jefferson';
+    /* Row 3 */
+    nameArr[3][0] = 'Winston Churchill';
+    nameArr[3][1] = 'Joan of Arc';
+    nameArr[3][2] = 'King Tut';
+    nameArr[3][3] = 'Leonard Klienrock';
+    nameArr[3][4] = 'Linus Torvalds';
+    nameArr[3][5] = 'Plato';
+
+    /* Save the Arrays to db.charactersCollection */
+    this.saveCharacterSetByType('Historic Figures', imgArr, nameArr, function(error, results){
         if( error ){
             console.log(error);
         } else{
