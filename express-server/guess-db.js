@@ -37,8 +37,8 @@ Database.prototype.createGame = function(name1, name2, type, callback){
 
         /* all positions are true; all characters are shown */
         for( var j=0; j<6; j++ ){
-            b1[i][j] = true;
-            b2[i][j] = true;
+            b1[i][j] = false;
+            b2[i][j] = false;
         }
     }
     /* choose a random card for each player */
@@ -234,7 +234,6 @@ Database.prototype.findGameById = function(id, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
         else{
-            console.log(id);
             game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
                 else if( results ) callback(null, results);
@@ -253,13 +252,10 @@ Database.prototype.endGameById = function(Game, callback){
             game_collection.remove({ _id: ObjectID(Game._id) }, function(error, results){
                 if( error ) callback(error);
                 else {
-                    console.log(results);
                     that.removeGameFromUser(Game._id, Game.player1.name, function(error, results){
                         if( error ) callback(error);
                         else{
-                            console.log(results);
                             that.removeGameFromUser(Game._id, Game.player2.name, function(error, results){
-                                console.log(results);
                                 if( error ) callback(error);
                                 else{
                                     return callback(null, 'success, game removed!');
@@ -391,12 +387,10 @@ Database.prototype.removeGameFromUser = function(_id, name, callback){
                 if( error ) callback(error);
                 else{
                     var arr = results.games;
-                    console.log(arr);
                     var b = _id;
                     for( var i=0; i<arr.length; i++ ){
                         var a = arr[i].id;
                         if( a == b ){
-                            console.log(a+'==='+b);
                             arr.splice(i, 1);
                             user_collection.update({ userName: name }, { '$set': { games: arr } });
                             console.log('game removed from user: '+name);
