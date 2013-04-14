@@ -5,4 +5,11 @@ $(document).ready(function(){
             options.append($('<option />').val(data[i].type).text(data[i].type));
         }
     });
+    $.get('notify-cred', function(data){
+        if( data === 'increase'){
+            alert('Congratulations: you have earned 100 credits');
+        } else if( data === 'decrease' ){
+            alert('Sorry: you lost 20 credits from your last game.');
+        }
+    });
 });

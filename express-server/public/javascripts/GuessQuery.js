@@ -1,5 +1,3 @@
-var element = "http://www.clipartsfree.net/vector/medium/purzen_Icon_with_question_mark_Clip_Art.png";
-var element1= "http://images2.fanpop.com/image/photos/9000000/Joker-the-joker-9028188-1024-768.jpg";
 var arr = new Array();
 var toSend = new Array();
 var opp = new Array();
@@ -20,11 +18,8 @@ function runGuess(e) {
                 url: '/update-game',
                 data: {guess: toAdd, board: toSend, isOppTurn: true},
                 success: function(data){
-                    if( data.redirect ){
-                        window.location.href = data.redirect;
-                    }
                     $('#guessToScroll').empty();
-                    for( var i=0; i<data.guesses.length; i++){
+                    for( var i=data.guesses.length-1; i>=0; --i){
                         $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                     }
                     if( data.player1.name === thisUser.userName ){
@@ -59,7 +54,7 @@ function runChat(e){
                 url: '/update-chat',
                 success: function(data){
                     $('#chatToScroll').empty();
-                    for( var i=0; i<data.length; i++ ){
+                    for( var i=data.length-1; i>=0; --i ){
                         $('#chatToScroll').append('<div class ="item">' +data[i]);
                     }
                 }
@@ -152,7 +147,7 @@ $(document).ready(function(){
     startOpponentArray(opp);
     $.post('/update-chat', function(data){
         $('#chatToScroll').empty();
-        for( var i=0; i<data.length; i++ ){
+        for( var i=data.length-1; i>=0; --i ){
             $('#chatToScroll').append('<div class ="item">' +data[i]);
         }
     });
@@ -163,7 +158,7 @@ $(document).ready(function(){
         success: function(data){
             thisUser = data.user;
             $('#guessToScroll').empty();
-            for( var i=0; i<data.guesses.length; i++){
+            for( var i=data.guesses.length-1; i>=0; --i){
                 $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
             }
             if( data.player1.name === thisUser.userName ){
@@ -197,7 +192,7 @@ $(document).ready(function(){
                window.location = '/account';
             } else{
                 $('#chatToScroll').empty();
-                for( var i=0; i<data.length; i++ ){
+                for( var i=data.length-1; i>=0; --i ){
                     $('#chatToScroll').append('<div class ="item">' +data[i]);
                 }
             }
@@ -210,7 +205,7 @@ $(document).ready(function(){
             data: {guess: null, board: toSend, isOppTurn: false},
             success: function(data){
                 $('#guessToScroll').empty();
-                for( var i=0; i<data.guesses.length; i++){
+                for( var i=data.guesses.length-1; i>=0; --i){
                     $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                 }
                 if( data.player1.name === thisUser.userName ){
@@ -239,7 +234,7 @@ $(document).ready(function(){
                 data: {guess: toAdd, board: toSend, isOppTurn: true},
                 success: function(data){
                     $('#guessToScroll').empty();
-                    for( var i=0; i<data.guesses.length; i++){
+                    for( var i=data.guesses.length-1; i>=0; --i ){
                         $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                     }
                     if( data.player1.name === thisUser.userName ){
@@ -268,7 +263,7 @@ $(document).ready(function(){
                 data: {message: toAdd},
                 success: function(data){
                     $('#chatToScroll').empty();
-                    for( var i=0; i<data.length; i++){
+                    for( var i=data.length-1; i>=0; --i ){
                         $('#chatToScroll').append('<div class ="item">' +data[i]);
                     }
                 }

@@ -31,7 +31,6 @@ app.configure(function(){
         secret: 'dontguessme!'
     }));
     app.use(app.router);
-    app.use(require('stylus').middleware(__dirname + '/public'));
     app.use(express.static(path.join(__dirname, 'public')));
 });
 
@@ -50,6 +49,19 @@ app.get('/', function(req, res, next){
     }
 });
 
+app.get('/notify-cred', function(req, res){
+    if( !req.session.user ) return;
+    else{
+        if( req.session.notifyCredIncrease ){
+            res.send('increase');
+        } else if( req.session.notifyCredDecrease ){
+            res.send('decrease');    
+        } else{
+            res.send('none');
+        }
+    }
+});
+
 /* GET account page */
 app.get('/account', function(req, res){
     if( !req.session.user ){
@@ -58,6 +70,11 @@ app.get('/account', function(req, res){
         db.getUser(req.session.user.userName, function(error, results){
             if( error ) callback(error);
             else{
+                if( req.session.user.gameCred < results.gameCred ){
+                    req.session.notifyCredIncrease = true;
+                } else if( req.session.user.gameCred > results.gameCred ){
+                    req.session.notifyCredDecrease = true;
+                }
                 req.session.user = results;
                 db.usersArray(function(error, results){
                     if( error ) console.log(error);
