@@ -4,6 +4,7 @@ var arr = new Array();
 var toSend = new Array();
 var opp = new Array();
 var yourTurn = true;
+var beenPrompted = false;
 var thisUser;
 //Declaration of the Item object for the table
 
@@ -28,16 +29,14 @@ function runGuess(e) {
                     }
                     if( data.player1.name === thisUser.userName ){
                         yourTurn = data.player1.isTurn;
-                        toSend = data.player1.board;
-                        opp = data.player2.board;
-                        updateOpponentArray(opp);
-                    } else{
+                        updateOpponentArray(data.player2.board);
+                    } 
+                    else{
                         yourTurn = data.player2.isTurn;
-                        toSend = data.player2.board;
-                        opp = data.player1.board;
-                        updateOpponentArray(opp);
+                        updateOpponentArray(data.player1.board);
                     }
                     yourTurn = false;
+                    beenPrompted = false;
                 }   
             });
         } else{
@@ -79,7 +78,7 @@ function runFinalGuess(e){
                 data: { finalGuess: toAdd },
                 url: '/final-guess',
                 success: function(data){
-                    alert('Game Over: '+data+' wins!');
+                    alert(data+' wins!');
                 }
             });
         }
@@ -91,7 +90,7 @@ var startUpSendArray = function(toSend){
 	for(var i=0;i<4;i++){
 		toSend[i] = new Array();
 		for(var j=0;j<6;j++){
-			toSend[i][j] = false;
+			toSend[i][j] = 'false';
 		}
 	}
 }
@@ -135,6 +134,16 @@ var updateOpponentArray = function(opp){
         }
     }
 };
+var updateYourBoard = function(ts){
+    for(var i=0;i<4;i++){
+        for(var j=0;j<6;j++){
+            if(ts[i][j] === 'true'){
+                toSend[i][j] = 'true';
+                $('#'+i+''+j).fadeTo("fast", 0.3);
+            } else toSend[i][j] = 'false';
+        }
+    }
+};
     /*****************************************
      * 		       DOC IS READY              *
      *****************************************/
@@ -150,7 +159,7 @@ $(document).ready(function(){
     $.ajax({
         type: "POST",
         url: '/update-game',
-        data: {guess: null, board: toSend, isOppTurn: false},
+        data: {guess: null, board: null, isOppTurn: false},
         success: function(data){
             thisUser = data.user;
             $('#guessToScroll').empty();
@@ -160,21 +169,20 @@ $(document).ready(function(){
             if( data.player1.name === thisUser.userName ){
                 //Sets up the card that the user will be answering questions about
                 $('#yourCard').append('<img src ='+data.player1.charImg+'><br>'+data.player1.charName);
+                updateYourBoard(data.player1.board);
                 yourTurn = data.player1.isTurn;
-                /*
-                toSend = data.player1.board;
-                opp = data.player2.board;
-                */
                 updateOpponentArray(data.player2.board);
-            } else{
+            } 
+            else{
                 //Sets up the card that the user will be answering questions about
                 $('#yourCard').append('<img src ='+data.player2.charImg+'><br>'+data.player2.charName);
+                updateYourBoard(data.player2.board);
                 yourTurn = data.player2.isTurn;
-                /*
-                toSend = data.player2.board;
-                opp = data.player1.board;
-                */
                 updateOpponentArray(data.player1.board);
+            }
+            if(yourTurn && !beenPrompted){
+                alert("It's your turn");
+                beenPrompted = true;
             }
         }
     });
@@ -185,12 +193,8 @@ $(document).ready(function(){
     window.setInterval(function() {
         $.post('/update-chat', function(data){
            if( data === 'Game Over' ){
-                alert('Game Over: opponent wins');
-                $.get('/account', function(data){
-                    if( data.redirect ){
-                        window.location.href = data.redirect;
-                    }
-                });
+               alert('Game Over!');
+               window.location = '/account';
             } else{
                 $('#chatToScroll').empty();
                 for( var i=0; i<data.length; i++ ){
@@ -198,17 +202,13 @@ $(document).ready(function(){
                 }
             }
         });
-    }, 3000); // 3 seconds
+    }, 1000); // 1 second
     window.setInterval(function(){
         $.ajax({
             type: "POST",
             url: '/update-game',
             data: {guess: null, board: toSend, isOppTurn: false},
             success: function(data){
-                if( data === 'Game Over' ){
-                    alert('Game Over: opponent wins');
-                    $.get('/account', function(data){});
-                } else{
                 $('#guessToScroll').empty();
                 for( var i=0; i<data.guesses.length; i++){
                     $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
@@ -216,14 +216,20 @@ $(document).ready(function(){
                 if( data.player1.name === thisUser.userName ){
                     yourTurn = data.player1.isTurn;
                     updateOpponentArray(data.player2.board);
-                } else{
+                    updateYourBoard(data.player1.board);
+                } 
+                else{
                     yourTurn = data.player2.isTurn;
                     updateOpponentArray(data.player1.board);
-                    }
+                    updateYourBoard(data.player2.board);
+                }
+                if(yourTurn && !beenPrompted){
+                    alert("It's your turn");
+                    beenPrompted = true;
                 }
             }
         });
-    }, 5000); // 5 seconds
+    }, 3000); // 3 seconds
     $('#guessButton').click(function(){
         if((yourTurn === true) && ($('input[name=guessItem]').val() !== "") && ($("input:radio[name='respTF']:checked").val() !== undefined)){
             var toAdd = $("input:radio[name='respTF']:checked").val() + ", " + $('input[name=guessItem]').val();
@@ -232,25 +238,19 @@ $(document).ready(function(){
                 url: '/update-game',
                 data: {guess: toAdd, board: toSend, isOppTurn: true},
                 success: function(data){
-                    if( data.redirect ){
-                        window.location.href = data.redirect;
-                    }
                     $('#guessToScroll').empty();
                     for( var i=0; i<data.guesses.length; i++){
                         $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                     }
                     if( data.player1.name === thisUser.userName ){
                         yourTurn = data.player1.isTurn;
-                        // toSend = data.player1.board;
-                        // opp = data.player2.board;
                         updateOpponentArray(data.player2.board);
                     } else{
                         yourTurn = data.player2.isTurn;
-                        // toSend = data.player2.board;
-                        // opp = data.player1.board;
                         updateOpponentArray(data.player1.board);
                     }
                     yourTurn = false;
+                    beenPrompted = false;
                 }   
             });
         } else{
@@ -284,15 +284,15 @@ $(document).ready(function(){
             var counter = $(this).attr('id');
             var x = counter.substr(0,1);
             var y = counter.substr(1,2);
-            if(toSend[x][y] == false){
+            if(toSend[x][y] == 'false'){
                 $(this).fadeTo("fast", 0.3);
-                toSend[x][y] = true;
-                opp[x][y] = true;
+                toSend[x][y] = 'true';
+                opp[x][y] = 'true';
             }
             else{
                 $(this).fadeTo("fast", 1.0);
-                toSend[x][y] = false;                
-                opp[x][y] = false;
+                toSend[x][y] = 'false';                
+                opp[x][y] = 'false';
             }
         }
         //$('body').append('<div>' + x +' '+y+ '</div>');

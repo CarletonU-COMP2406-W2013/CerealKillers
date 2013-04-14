@@ -268,7 +268,6 @@ app.post('/update-chat', function(req, res){
         db.findChatById(req.session.game._id, function(error, results){
             if( error ){
                 res.send('Game Over');
-                res.redirect('/account');
             } else {
                 res.send(results);
             }

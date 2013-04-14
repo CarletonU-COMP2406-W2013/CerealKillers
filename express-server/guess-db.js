@@ -37,8 +37,8 @@ Database.prototype.createGame = function(name1, name2, type, callback){
 
         /* all positions are true; all characters are shown */
         for( var j=0; j<6; j++ ){
-            b1[i][j] = false;
-            b2[i][j] = false;
+            b1[i][j] = 'false';
+            b2[i][j] = 'false';
         }
     }
     /* choose a random card for each player */
@@ -152,7 +152,7 @@ Database.prototype.findGameInUsers = function(name1, name2, type, callback){
 Database.prototype.updateGameBoard = function(id, name, board, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
-        else if( board !== null ){
+        else if( board ){
             game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
                 else if( results === null){
