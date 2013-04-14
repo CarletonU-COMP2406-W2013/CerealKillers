@@ -286,14 +286,12 @@ app.post('/update-game', function(req, res){
     function(error, results){
         if( error ) console.log(error);
         else{
-            console.log('updated game board!');
             if( req.body.guess ){
-                console.log(req.body.guess);
-                db.updateGameGuess(req.session.game._id, req.session.user.userName, req.body.guess,
+                var str = req.session.user.userName+': '+req.body.guess;
+                db.updateGameGuess(req.session.game._id, req.session.user.userName, str,
                 function(error, results){
                     if( error ) console.log(error)
                     else{
-                        console.log('updated guesses!');
                         if( req.body.isOppTurn ){
                             db.switchTurns(req.session.game._id, function(error, results){
                                 if( error ) console.log(error);
