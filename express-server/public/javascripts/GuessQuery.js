@@ -12,18 +12,21 @@ var thisUser;
 //	-checks if it is the current user's turn and if it is it will post the contents to the page and send it to the server
 function runGuess(e) {
     if (e.keyCode == 13) {
-    	var toAdd = $("input:radio[name='respTF']:checked").val() + ", "+$('input[name=guessItem]').val();
-        if((yourTurn == true) && (toAdd != "") && ($("input:radio[name='respTF']:checked").val() != undefined)){
+    	if((yourTurn === true) && ($('input[name=guessItem]').val() !== "") && ($("input:radio[name='respTF']:checked").val() !== undefined)){
+            var toAdd = $("input:radio[name='respTF']:checked").val() + ", " + $('input[name=guessItem]').val();
             $.ajax({
                 type: "POST",
                 url: '/update-game',
                 data: {guess: toAdd, board: toSend, isOppTurn: true},
                 success: function(data){
+                    if( data.redirect ){
+                        window.location.href = data.redirect;
+                    }
                     $('#guessToScroll').empty();
                     for( var i=0; i<data.guesses.length; i++){
                         $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                     }
-                    if( data.player1.name === user.userName ){
+                    if( data.player1.name === thisUser.userName ){
                         yourTurn = data.player1.isTurn;
                         toSend = data.player1.board;
                         opp = data.player2.board;
@@ -34,10 +37,13 @@ function runGuess(e) {
                         opp = data.player1.board;
                         updateOpponentArray(opp);
                     }
+                    yourTurn = false;
                 }   
             });
-		}
-		//$('input[name=guessItem]').val("");
+        } else{
+            alert("Waiting for opponent");
+        }
+        $('input[name=guessItem]').val("");
         return false;
     }
 }
@@ -81,11 +87,11 @@ function runFinalGuess(e){
     }
 }
 //initializes the two dimensional array of boolean values "toSend" all to true
-var startUpSendArray = function(ts){
+var startUpSendArray = function(toSend){
 	for(var i=0;i<4;i++){
-		ts[i] = new Array();
+		toSend[i] = new Array();
 		for(var j=0;j<6;j++){
-			ts[i][j] = true;
+			toSend[i][j] = false;
 		}
 	}
 }
@@ -122,9 +128,9 @@ var updateOpponentArray = function(opp){
     for(var i=0;i<4;i++){
         for(var j=0;j<6;j++){
             if(opp[i][j] == false)
-                $('#o'+i+''+j).css('background-color','white');
-            else{
                 $('#o'+i+''+j).css('background-color','black');
+            else{
+                $('#o'+i+''+j).css('background-color','white');
             }
         }
     }
@@ -133,6 +139,8 @@ var updateOpponentArray = function(opp){
      * 		       DOC IS READY              *
      *****************************************/
 $(document).ready(function(){
+    startUpSendArray(toSend);
+    startOpponentArray(opp);
     $.post('/update-chat', function(data){
         $('#chatToScroll').empty();
         for( var i=0; i<data.length; i++ ){
@@ -168,9 +176,7 @@ $(document).ready(function(){
     });
     //runs the previously defined methods to set up the game
     startUpPic(arr);
-    startUpSendArray(toSend);
-    startOpponentArray(opp);
-    updateOpponentArray(opp);
+    //updateOpponentArray(opp);
     //Handles the guess div being clicked
     window.setInterval(function() {
         $.post('/update-chat', function(data){
@@ -287,14 +293,13 @@ $(document).ready(function(){
             if(toSend[x][y] == false){
                 $(this).fadeTo("fast", 0.3);
                 toSend[x][y] = true;
-                //opp[x][y] = true;
+                opp[x][y] = true;
             }
             else{
                 $(this).fadeTo("fast", 1.0);
                 toSend[x][y] = false;                
-                //opp[x][y] = false;
+                opp[x][y] = false;
             }
-            //updateOpponentArray(opp);
         }
         //$('body').append('<div>' + x +' '+y+ '</div>');
     });
