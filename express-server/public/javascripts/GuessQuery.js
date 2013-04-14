@@ -278,7 +278,7 @@ $(document).ready(function(){
         $('input[name=chatItem]').val("");
     });
     //when the user clicks on a picture it will fade out or in and assign the correct value to that position in the array
-    $('#board').on("click", "td",function(){
+    $(document).on("click", "td",function(){
         var check = $(this).attr('class');
         if(check == "boardElement"){
             var counter = $(this).attr('id');
