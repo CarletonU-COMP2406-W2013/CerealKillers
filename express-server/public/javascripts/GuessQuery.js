@@ -1,5 +1,3 @@
-var element = "http://www.clipartsfree.net/vector/medium/purzen_Icon_with_question_mark_Clip_Art.png";
-var element1= "http://images2.fanpop.com/image/photos/9000000/Joker-the-joker-9028188-1024-768.jpg";
 var arr = new Array();
 var toSend = new Array();
 var opp = new Array();
@@ -20,11 +18,8 @@ function runGuess(e) {
                 url: '/update-game',
                 data: {guess: toAdd, board: toSend, isOppTurn: true},
                 success: function(data){
-                    if( data.redirect ){
-                        window.location.href = data.redirect;
-                    }
                     $('#guessToScroll').empty();
-                    for( var i=0; i<data.guesses.length; i++){
+                    for( var i=data.guesses.length-1; i>=0; --i){
                         $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                     }
                     if( data.player1.name === thisUser.userName ){
@@ -59,7 +54,7 @@ function runChat(e){
                 url: '/update-chat',
                 success: function(data){
                     $('#chatToScroll').empty();
-                    for( var i=0; i<data.length; i++ ){
+                    for( var i=data.length-1; i>=0; --i ){
                         $('#chatToScroll').append('<div class ="item">' +data[i]);
                     }
                 }
@@ -78,7 +73,7 @@ function runFinalGuess(e){
                 data: { finalGuess: toAdd },
                 url: '/final-guess',
                 success: function(data){
-                    alert('Game Over: '+data+' wins!');
+                    alert(data+' wins!');
                 }
             });
         }
@@ -90,7 +85,7 @@ var startUpSendArray = function(toSend){
 	for(var i=0;i<4;i++){
 		toSend[i] = new Array();
 		for(var j=0;j<6;j++){
-			toSend[i][j] = false;
+			toSend[i][j] = 'false';
 		}
 	}
 }
@@ -138,8 +133,9 @@ var updateYourBoard = function(ts){
     for(var i=0;i<4;i++){
         for(var j=0;j<6;j++){
             if(ts[i][j] === 'true'){
+                toSend[i][j] = 'true';
                 $('#'+i+''+j).fadeTo("fast", 0.3);
-            }
+            } else toSend[i][j] = 'false';
         }
     }
 };
@@ -151,7 +147,7 @@ $(document).ready(function(){
     startOpponentArray(opp);
     $.post('/update-chat', function(data){
         $('#chatToScroll').empty();
-        for( var i=0; i<data.length; i++ ){
+        for( var i=data.length-1; i>=0; --i ){
             $('#chatToScroll').append('<div class ="item">' +data[i]);
         }
     });
@@ -162,22 +158,22 @@ $(document).ready(function(){
         success: function(data){
             thisUser = data.user;
             $('#guessToScroll').empty();
-            for( var i=0; i<data.guesses.length; i++){
+            for( var i=data.guesses.length-1; i>=0; --i){
                 $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
             }
             if( data.player1.name === thisUser.userName ){
                 //Sets up the card that the user will be answering questions about
                 $('#yourCard').append('<img src ='+data.player1.charImg+'><br>'+data.player1.charName);
+                updateYourBoard(data.player1.board);
                 yourTurn = data.player1.isTurn;
                 updateOpponentArray(data.player2.board);
-                updateYourBoard(data.player1.board);
             } 
             else{
                 //Sets up the card that the user will be answering questions about
                 $('#yourCard').append('<img src ='+data.player2.charImg+'><br>'+data.player2.charName);
+                updateYourBoard(data.player2.board);
                 yourTurn = data.player2.isTurn;
                 updateOpponentArray(data.player1.board);
-                updateYourBoard(data.player2.board);
             }
             if(yourTurn && !beenPrompted){
                 alert("It's your turn");
@@ -191,52 +187,36 @@ $(document).ready(function(){
     //Handles the guess div being clicked
     window.setInterval(function() {
         $.post('/update-chat', function(data){
-           if( data.redirect ){
-               window.location.href = data.redirect;
-           }
            if( data === 'Game Over' ){
-                alert('Game Over: opponent wins');
-                $.get('/account', function(data){
-                    if( data.redirect ){
-                        window.location.href = data.redirect;
-                    }
-                });
+               alert('Game Over!');
+               window.location = '/account';
             } else{
                 $('#chatToScroll').empty();
-                for( var i=0; i<data.length; i++ ){
+                for( var i=data.length-1; i>=0; --i ){
                     $('#chatToScroll').append('<div class ="item">' +data[i]);
                 }
             }
         });
-    }, 3000); // 3 seconds
+    }, 1000); // 1 second
     window.setInterval(function(){
         $.ajax({
             type: "POST",
             url: '/update-game',
             data: {guess: null, board: toSend, isOppTurn: false},
             success: function(data){
-               if( data.redirect ){
-                    window.location.href = data.redirect;
+                $('#guessToScroll').empty();
+                for( var i=data.guesses.length-1; i>=0; --i){
+                    $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                 }
-                if( data === 'Game Over' ){
-                    alert('Game Over: opponent wins');
-                    $.get('/account', function(data){});
+                if( data.player1.name === thisUser.userName ){
+                    yourTurn = data.player1.isTurn;
+                    updateOpponentArray(data.player2.board);
+                    updateYourBoard(data.player1.board);
                 } 
                 else{
-                    $('#guessToScroll').empty();
-                    for( var i=0; i<data.guesses.length; i++){
-                        $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
-                    }
-                    if( data.player1.name === thisUser.userName ){
-                        yourTurn = data.player1.isTurn;
-                        updateOpponentArray(data.player2.board);
-                        updateYourBoard(data.player1.board);
-                    } 
-                    else{
-                        yourTurn = data.player2.isTurn;
-                        updateOpponentArray(data.player1.board);
-                        updateYourBoard(data.player2.board);
-                    }
+                    yourTurn = data.player2.isTurn;
+                    updateOpponentArray(data.player1.board);
+                    updateYourBoard(data.player2.board);
                 }
                 if(yourTurn && !beenPrompted){
                     alert("It's your turn");
@@ -244,7 +224,7 @@ $(document).ready(function(){
                 }
             }
         });
-    }, 5000); // 5 seconds
+    }, 3000); // 3 seconds
     $('#guessButton').click(function(){
         if((yourTurn === true) && ($('input[name=guessItem]').val() !== "") && ($("input:radio[name='respTF']:checked").val() !== undefined)){
             var toAdd = $("input:radio[name='respTF']:checked").val() + ", " + $('input[name=guessItem]').val();
@@ -253,11 +233,8 @@ $(document).ready(function(){
                 url: '/update-game',
                 data: {guess: toAdd, board: toSend, isOppTurn: true},
                 success: function(data){
-                    if( data.redirect ){
-                        window.location.href = data.redirect;
-                    }
                     $('#guessToScroll').empty();
-                    for( var i=0; i<data.guesses.length; i++){
+                    for( var i=data.guesses.length-1; i>=0; --i ){
                         $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                     }
                     if( data.player1.name === thisUser.userName ){
@@ -286,7 +263,7 @@ $(document).ready(function(){
                 data: {message: toAdd},
                 success: function(data){
                     $('#chatToScroll').empty();
-                    for( var i=0; i<data.length; i++){
+                    for( var i=data.length-1; i>=0; --i ){
                         $('#chatToScroll').append('<div class ="item">' +data[i]);
                     }
                 }
@@ -302,15 +279,15 @@ $(document).ready(function(){
             var counter = $(this).attr('id');
             var x = counter.substr(0,1);
             var y = counter.substr(1,2);
-            if(toSend[x][y] == false){
+            if(toSend[x][y] == 'false'){
                 $(this).fadeTo("fast", 0.3);
-                toSend[x][y] = true;
-                opp[x][y] = true;
+                toSend[x][y] = 'true';
+                opp[x][y] = 'true';
             }
             else{
                 $(this).fadeTo("fast", 1.0);
-                toSend[x][y] = false;                
-                opp[x][y] = false;
+                toSend[x][y] = 'false';                
+                opp[x][y] = 'false';
             }
         }
         //$('body').append('<div>' + x +' '+y+ '</div>');
