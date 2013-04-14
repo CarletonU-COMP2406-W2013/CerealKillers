@@ -152,7 +152,7 @@ Database.prototype.findGameInUsers = function(name1, name2, type, callback){
 Database.prototype.updateGameBoard = function(id, name, board, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
-        else{
+        else if(board != null){
             game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
                 else if( results === null){
@@ -168,6 +168,9 @@ Database.prototype.updateGameBoard = function(id, name, board, callback){
                     callback(null, 'success!');
                 }
             });
+        }
+        else{
+            callback(null, "no board provided");
         }
     });
 };

@@ -4,6 +4,7 @@ var arr = new Array();
 var toSend = new Array();
 var opp = new Array();
 var yourTurn = true;
+var beenPrompted = false;
 var thisUser;
 //Declaration of the Item object for the table
 
@@ -28,16 +29,14 @@ function runGuess(e) {
                     }
                     if( data.player1.name === thisUser.userName ){
                         yourTurn = data.player1.isTurn;
-                        toSend = data.player1.board;
-                        opp = data.player2.board;
-                        updateOpponentArray(opp);
-                    } else{
+                        updateOpponentArray(data.player2.board);
+                    } 
+                    else{
                         yourTurn = data.player2.isTurn;
-                        toSend = data.player2.board;
-                        opp = data.player1.board;
-                        updateOpponentArray(opp);
+                        updateOpponentArray(data.player1.board);
                     }
                     yourTurn = false;
+                    beenPrompted = false;
                 }   
             });
         } else{
@@ -135,6 +134,15 @@ var updateOpponentArray = function(opp){
         }
     }
 };
+var updateYourBoard = function(ts){
+    for(var i=0;i<4;i++){
+        for(var j=0;j<6;j++){
+            if(ts[i][j] === 'true'){
+                $('#'+i+''+j).fadeTo("fast", 0.3);
+            }
+        }
+    }
+};
     /*****************************************
      * 		       DOC IS READY              *
      *****************************************/
@@ -150,7 +158,7 @@ $(document).ready(function(){
     $.ajax({
         type: "POST",
         url: '/update-game',
-        data: {guess: null, board: toSend, isOppTurn: false},
+        data: {guess: null, board: null, isOppTurn: false},
         success: function(data){
             thisUser = data.user;
             $('#guessToScroll').empty();
@@ -161,20 +169,19 @@ $(document).ready(function(){
                 //Sets up the card that the user will be answering questions about
                 $('#yourCard').append('<img src ='+data.player1.charImg+'><br>'+data.player1.charName);
                 yourTurn = data.player1.isTurn;
-                /*
-                toSend = data.player1.board;
-                opp = data.player2.board;
-                */
                 updateOpponentArray(data.player2.board);
-            } else{
+                updateYourBoard(data.player1.board);
+            } 
+            else{
                 //Sets up the card that the user will be answering questions about
                 $('#yourCard').append('<img src ='+data.player2.charImg+'><br>'+data.player2.charName);
                 yourTurn = data.player2.isTurn;
-                /*
-                toSend = data.player2.board;
-                opp = data.player1.board;
-                */
                 updateOpponentArray(data.player1.board);
+                updateYourBoard(data.player2.board);
+            }
+            if(yourTurn && !beenPrompted){
+                alert("It's your turn");
+                beenPrompted = true;
             }
         }
     });
@@ -214,26 +221,26 @@ $(document).ready(function(){
                 if( data === 'Game Over' ){
                     alert('Game Over: opponent wins');
                     $.get('/account', function(data){});
-                } else{
-                $('#guessToScroll').empty();
-                for( var i=0; i<data.guesses.length; i++){
-                    $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
-                }
-                if( data.player1.name === thisUser.userName ){
-                    yourTurn = data.player1.isTurn;
-                    /*
-                    toSend = data.player1.board;
-                    opp = data.player2.board;
-                    */
-                    updateOpponentArray(data.player2.board);
-                } else{
-                    yourTurn = data.player2.isTurn;
-                    /*
-                    toSend = data.player2.board;
-                    opp = data.player1.board;
-                    */
-                    updateOpponentArray(data.player1.board);
+                } 
+                else{
+                    $('#guessToScroll').empty();
+                    for( var i=0; i<data.guesses.length; i++){
+                        $('#guessToScroll').append('<div class ="item">' +data.guesses[i]);
                     }
+                    if( data.player1.name === thisUser.userName ){
+                        yourTurn = data.player1.isTurn;
+                        updateOpponentArray(data.player2.board);
+                        updateYourBoard(data.player1.board);
+                    } 
+                    else{
+                        yourTurn = data.player2.isTurn;
+                        updateOpponentArray(data.player1.board);
+                        updateYourBoard(data.player2.board);
+                    }
+                }
+                if(yourTurn && !beenPrompted){
+                    alert("It's your turn");
+                    beenPrompted = true;
                 }
             }
         });
@@ -255,16 +262,13 @@ $(document).ready(function(){
                     }
                     if( data.player1.name === thisUser.userName ){
                         yourTurn = data.player1.isTurn;
-                        // toSend = data.player1.board;
-                        // opp = data.player2.board;
                         updateOpponentArray(data.player2.board);
                     } else{
                         yourTurn = data.player2.isTurn;
-                        // toSend = data.player2.board;
-                        // opp = data.player1.board;
                         updateOpponentArray(data.player1.board);
                     }
                     yourTurn = false;
+                    beenPrompted = false;
                 }   
             });
         } else{
