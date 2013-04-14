@@ -13,10 +13,10 @@ node_modules - all libraries used throughout the app
 public
 ------
 public - all static files containing JQuery,stylesheets,images
->public\images - all image sets and other images used in our app
->public\javascripts - Contains GuessQuery.js which is all the client side javascript to play the game and AccQuery.js which is used for selecting game type and to alert user of results of game.
->public\libs - JQuery library
->public\stlyesheets - all style sheets for each page within our app.
+- public\images - all image sets and other images used in our app
+- public\javascripts - Contains GuessQuery.js which is all the client side javascript to play the game and AccQuery.js which is used for selecting game type and to alert user of results of game.
+- public\libs - JQuery library
+- public\stlyesheets - all style sheets for each page within our app.
 
 routes
 -------
