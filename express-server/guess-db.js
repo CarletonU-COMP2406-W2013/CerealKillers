@@ -100,6 +100,21 @@ Database.prototype.findGame = function(name1, name2, type, callback){
     });
 };
 
+/* is this user player 1? */
+Database.prototype.isPlayer1 = function(id, name){
+    this.findGameById(id, function(error, results){
+        if( error ) console.log(error);
+        else{
+            if( results.player1.name === name ){
+                return true;
+            } else if( results.player2.name === name ){
+                return false;
+            } else{
+                console.log('error, user not in game');
+            }
+        }
+    });
+};
 
 /* find a game by looking in two users*/
 Database.prototype.findGameInUsers = function(name1, name2, type, callback){
@@ -219,22 +234,41 @@ Database.prototype.findGameById = function(id, callback){
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
         else{
+            console.log(id);
             game_collection.findOne({ _id: ObjectID(id) }, function(error, results){
                 if( error ) callback(error);
-                else callback(null, results);
+                else if( results ) callback(null, results);
+                else callback('error finding game');
             });
         }
     });
 };
 
 /* end a game */
-Database.prototype.endGameById = function(id, callback){
+Database.prototype.endGameById = function(Game, callback){
+    var that = this; // workaround!
     this.getGames(function(error, game_collection){
         if( error ) callback(error);
         else{
-            game_collection.remove({ _id: ObjectID(id) }, function(error, results){
+            game_collection.remove({ _id: ObjectID(Game._id) }, function(error, results){
                 if( error ) callback(error);
-                else callback(null, 'success, game over!');
+                else {
+                    console.log(results);
+                    that.removeGameFromUser(Game._id, Game.player1.name, function(error, results){
+                        if( error ) callback(error);
+                        else{
+                            console.log(results);
+                            that.removeGameFromUser(Game._id, Game.player2.name, function(error, results){
+                                console.log(results);
+                                if( error ) callback(error);
+                                else{
+                                    return callback(null, 'success, game removed!');
+                                }
+                            });
+                        }
+                    });
+                    callback('error removing game');
+                }
             });
         }
     });
@@ -349,6 +383,50 @@ Database.prototype.addGameToUser = function(Game, name, isNewReq, callback){
     });
 };
 
+Database.prototype.removeGameFromUser = function(_id, name, callback){
+    this.getUsers(function(error, user_collection){
+        if( error ) callback(error);
+        else{
+            user_collection.findOne({ userName: name }, function(error, results){
+                if( error ) callback(error);
+                else{
+                    var arr = results.games;
+                    console.log(arr);
+                    var b = _id;
+                    for( var i=0; i<arr.length; i++ ){
+                        var a = arr[i].id;
+                        if( a == b ){
+                            console.log(a+'==='+b);
+                            arr.splice(i, 1);
+                            user_collection.update({ userName: name }, { '$set': { games: arr } });
+                            console.log('game removed from user: '+name);
+                            callback(null, 'success!');
+                            return;
+                        } // fi
+                    } // rof
+                    callback('error, game not found in user: '+name);
+                }
+            });
+        }
+    });
+};
+
+Database.prototype.incrementUsersCred = function(name, callback){
+    this.getUsers(function(error, user_collection){
+        if( error ) callback(error);
+        else{
+            user_collection.findOne({ userName: name }, function(error, results){
+                if( error ) callback(error);
+                else{
+                    results.gameCred += 100;
+                    user_collection.update({ userName: name }, { '$set': { gameCred: results.gameCred } });
+                    callback(null, 'success!');
+                }
+            });
+        }
+    });
+};
+
 /* returns a user's active games. Can get games using these. */
 Database.prototype.getUsersGames = function(name, callback){
     this.getUsers(function(error, user_collection){
@@ -382,6 +460,7 @@ Database.prototype.getCharactersCollection = function(callback){
 /* get list of game types */
 Database.prototype.getGameTypes = function(callback){
     this.setupMovieChars();
+    this.setupSSBChars();
     this.getCharactersCollection(function(error, characters_collection){
         if( error ) callback(error);
         else{
@@ -526,9 +605,9 @@ Database.prototype.setupSSBChars = function(){
     imgArr[1][0] = 'images/SuperSmashBros/JigglyPuff.jpg';
     imgArr[1][1] = 'images/SuperSmashBros/Kirby.png';
     imgArr[1][2] = 'images/SuperSmashBros/Link.jpeg';
-    imgArr[1][3] = 'images/SuperSmashBros/Lucas.JPG';
-    imgArr[1][4] = 'images/SuperSmashBros/Luigi.jpg';
-    imgArr[1][5] = 'images/SuperSmashBros/Mario.png';
+    imgArr[1][3] = 'images/SuperSmashBros/Lucas.jpg';
+    imgArr[1][4] = 'images/SuperSmashBros/Luigi.jpeg';
+    imgArr[1][5] = 'images/SuperSmashBros/Mario.jpeg';
     /* Row 2 */
     imgArr[2][0] = 'images/SuperSmashBros/Ness.jpg';
     imgArr[2][1] = 'images/SuperSmashBros/Olimar.png';
