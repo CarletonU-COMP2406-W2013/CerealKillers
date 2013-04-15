@@ -1,0 +1,7 @@
+How to run our game:
+
+1) Make sure you have Node.js and MongoDB installed
+2) Start up MongoDB
+3) Go to the express-server folder and on the command line type node app.js
+4) This will run the server and have it listening on port 3000
+5) To see it on your own machine you can enter the browser and type localhost:3000 and the Home page will start up
