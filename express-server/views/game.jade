@@ -36,10 +36,10 @@ html
             #guessButton Guess!
           td#centerCell
             b
-              |Your final guess!
+              |Place your guess:
               form(name='finalGuessForm')
                 input#finalInput(type='text', name='finalItem', onkeypress='return runFinalGuess(event)')
-              |Beware if you're wrong you lose!
+              |If you're wrong, you lose!
           td
             form(name='chatForm')
               input#chatInput(type='text', name='chatItem', onkeypress='return runChat(event)')
